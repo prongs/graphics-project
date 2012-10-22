@@ -50,6 +50,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <ExecutablePath>libraries\freeglutFiles;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>libraries\glew-1.8.0\include;libraries\glload\include;libraries\freeglutFiles\include;$(IncludePath)</IncludePath>
+    <LibraryPath>libraries\glew-1.8.0\lib;libraries\glload\lib;libraries\freeglutFiles\x64;libraries\freeglutFiles;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -80,6 +83,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>glew32.lib;glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
