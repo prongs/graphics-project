@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "utils.h"
 #include "shaderutils.h"
+#include <lib3ds.h>
 using namespace std;
 
 int _tmain(int argc, _TCHAR* argv[])

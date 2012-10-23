@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>libraries\freeglutFiles;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>libraries\glew-1.8.0\include;libraries\glload\include;libraries\freeglutFiles\include;$(IncludePath)</IncludePath>
+    <IncludePath>libraries\glew-1.8.0\include;libraries\glload\include;libraries\freeglutFiles\include;libraries\lib3ds\src;$(IncludePath)</IncludePath>
     <LibraryPath>libraries\glew-1.8.0\lib;libraries\glload\lib;libraries\freeglutFiles\x64;libraries\freeglutFiles;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
