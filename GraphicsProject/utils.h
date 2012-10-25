@@ -8,6 +8,8 @@
 #include <map>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <lib3ds.h>
+#define GAME_NAME ("Supercool Racing Game")
 /*more #includes. Don't write "using namespace std" here*/
 
 #ifdef WIN32
