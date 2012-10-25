@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 	glewInit();
 	glMatrixMode(GL_PROJECTION);
-	gluLookAt(0.0, 0.0, 26.0,
+	gluLookAt(0.0, 0.0, 3.0,
 		0.0, 0.0, -1.0,
 		0.0, 1.0, 0.0);
 	glEnable(GL_LIGHTING);
@@ -55,6 +55,22 @@ int main(int argc, char* argv[])
 
 void reshapeFunc(int w, int h)
 {
+	if (h == 0) // Prevent divide by zero
+		h = 1;
+
+	float ratio = 1.0 * w / h;
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+
+
+	glViewport(0, 0, w, h);
+
+	gluPerspective(45, ratio, 1, 1000);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0.0, 0.0, 3.0,
+		0.0, 0.0, -1.0,
+		0.0, 1.0, 0.0);
 }
 void keyboardFunc(unsigned char key, int x, int y)
 {
@@ -66,12 +82,16 @@ void keyboardFunc(unsigned char key, int x, int y)
 	}
 }
 
-	void mouseFunc(int button, int state, int x, int y)
-	{
-	}
-	void motionFunc(int x, int y)
-	{
-	}
-	void displayFunc()
-	{
-	}
+void mouseFunc(int button, int state, int x, int y)
+{
+}
+void motionFunc(int x, int y)
+{
+}
+void displayFunc()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glutSolidSphere(5,16,16);
+	car->display();
+	glutSwapBuffers();
+}

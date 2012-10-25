@@ -7,7 +7,7 @@ class Car
 public:
 	Car();
 	~Car();
-
+	void display();
 private:
 	Lib3dsFile* file;
 };
@@ -27,5 +27,21 @@ Car::Car()
 Car::~Car()
 {
 	//TODO: add relevant code
+}
+void Car::display()
+{
+	for(int i=0;i<file->nmeshes;i++)
+	{
+		Lib3dsMesh* mesh=file->meshes[i];
+		float* v=mesh->vertices[0];
+		for (int j = 0; j < mesh->nfaces; j++)
+		{
+			Lib3dsFace* face= mesh->faces+i;
+			glColor3f(1.0,0.0,0.0);
+			//debug(mesh->vertices[0][face->index[0]],mesh->vertices[1][face->index[0]],mesh->vertices[2][face->index[0]]);
+			glVertex3f(mesh->vertices[0][face->index[0]],mesh->vertices[1][face->index[0]],mesh->vertices[2][face->index[0]]);
+		}
+		glPopMatrix();
+	}
 }
 #endif
