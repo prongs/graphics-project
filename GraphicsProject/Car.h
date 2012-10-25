@@ -2,7 +2,6 @@
 #define CAR_H
 #include "utils.h"
 
-
 class Car
 {
 public:

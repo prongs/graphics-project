@@ -31,6 +31,9 @@ obj/
 [Rr]elease*/
 Ankh.NoLoad
 
+#Upgrade Report from upgrading projects build in older versions of visual studio
+_UpgradeReport_Files
+UpgradeLog.*
 #MonoDevelop
 *.pidb
 *.userprefs

@@ -53,14 +53,20 @@ void reshapeFunc(int w, int h)
 }
 void keyboardFunc(unsigned char key, int x, int y)
 {
+	switch(key)
+	{
+	case 27: //escape
+
+		exit(0);
+	}
 }
 
-void mouseFunc(int button, int state, int x, int y)
-{
-}
-void motionFunc(int x, int y)
-{
-}
-void displayFunc()
-{
-}
+	void mouseFunc(int button, int state, int x, int y)
+	{
+	}
+	void motionFunc(int x, int y)
+	{
+	}
+	void displayFunc()
+	{
+	}
