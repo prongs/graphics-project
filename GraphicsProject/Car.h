@@ -21,6 +21,7 @@ Car::Car()
 	for(int i=0;i<file->nmeshes;i++)
 	{
 		mesh=meshes[i];
+		cout<<i<<":"<<mesh->name<<endl;
 	}
 }
 
@@ -36,12 +37,11 @@ void Car::display()
 		float* v=mesh->vertices[0];
 		for (int j = 0; j < mesh->nfaces; j++)
 		{
-			Lib3dsFace* face= mesh->faces+i;
+			Lib3dsFace* face= mesh->faces+j;
 			glColor3f(1.0,0.0,0.0);
 			//debug(mesh->vertices[0][face->index[0]],mesh->vertices[1][face->index[0]],mesh->vertices[2][face->index[0]]);
-			glVertex3f(mesh->vertices[0][face->index[0]],mesh->vertices[1][face->index[0]],mesh->vertices[2][face->index[0]]);
+			glVertex3f(10*mesh->vertices[face->index[0]][0],10*mesh->vertices[face->index[0]][1],10*mesh->vertices[face->index[0]][2]);
 		}
-		glPopMatrix();
 	}
 }
 #endif
