@@ -39,6 +39,7 @@
 #define pb push_back
 #define fill(a,v) memset(a,v,sizeof a)
 #define sz(a) ((int)(a.size()))
+#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
 #define mp make_pair
 // Some common useful functions
 #define MAX(a,b) ((a)>(b)?(a):(b))

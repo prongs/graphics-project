@@ -20,10 +20,15 @@ void keyboardFunc(unsigned char, int, int);
 void mouseFunc(int,int,int,int);
 void motionFunc(int,int);
 
+void initObjects()
+{
+	car=new Car();
+}
 
 int main(int argc, char* argv[])
 {
 	glutInit(&argc, argv);
+	initObjects();
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(1280, 720);
