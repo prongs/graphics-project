@@ -33,6 +33,8 @@ Ankh.NoLoad
 #Upgrade Report from upgrading projects build in older versions of visual studio
 _UpgradeReport_Files
 UpgradeLog.*
+[Bb]ackup/
+
 #MonoDevelop
 *.pidb
 *.userprefs
