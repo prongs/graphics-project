@@ -28,14 +28,13 @@ void initObjects()
 int main(int argc, char* argv[])
 {
 	glutInit(&argc, argv);
-	initObjects();
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(1280, 720);
 	glutCreateWindow(GAME_NAME);
 	//glutFullScreen();
 	glutDisplayFunc(displayFunc);
-	glutIdleFunc(displayFunc);
+	//glutIdleFunc(displayFunc);
 	glutReshapeFunc(reshapeFunc);
 	glutKeyboardFunc(keyboardFunc);
 	glutMouseFunc(mouseFunc);
@@ -50,6 +49,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
+	initObjects();
 	glutMainLoop();
 	return 0;
 }
