@@ -18,20 +18,13 @@ private:
 Car::Car()
 {
 	file=lib3ds_file_open("models/lamborgini/lamborgini.3ds");
-	Lib3dsMesh** meshes=file->meshes;
-	Lib3dsMesh* mesh;
-	cout<<sizeof(meshes)<<endl;
-	for(int i=0;i<file->nmeshes;i++)
-	{
-		mesh=meshes[i];
-		cout<<i<<":"<<mesh->name<<endl;
-	}
 	generate_display_lists();
 }
 
 Car::~Car()
 {
 	//TODO: add relevant code
+	lib3ds_file_free(file);
 }
 void Car::display()
 {
@@ -40,7 +33,6 @@ void Car::display()
 		render_node(node);
 	}	
 }
-#define Lib3dsVector float[3]
 
 void Car::generate_display_lists()
 {
