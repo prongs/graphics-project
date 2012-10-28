@@ -20,7 +20,7 @@ private:
 
 Car::Car()
 {
-	file=lib3ds_file_open("models/lamborgini/lamborgini.3ds");
+	file=lib3ds_file_open("models/audir8/audi.3ds");
 	generate_display_lists();
 	viewFromCamera=true;
 	angle=-90.0;
