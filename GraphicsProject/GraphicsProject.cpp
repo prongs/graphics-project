@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 	glutCreateWindow(GAME_NAME);
 	//glutFullScreen();
 	glutDisplayFunc(displayFunc);
-	//glutIdleFunc(displayFunc);
+	glutIdleFunc(displayFunc);
 	glutReshapeFunc(reshapeFunc);
 	glutKeyboardFunc(keyboardFunc);
 	glutMouseFunc(mouseFunc);
@@ -42,9 +42,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 	glewInit();
 	glMatrixMode(GL_PROJECTION);
-	gluLookAt(0.0, 0.0, 3.0,
-		0.0, 0.0, -1.0,
-		0.0, 1.0, 0.0);
+	gluLookAt(0.0, 0.0, 99.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);

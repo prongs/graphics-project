@@ -11,14 +11,19 @@ public:
 	void display();
 	void render_node(Lib3dsNode*);
 	void generate_display_lists();
+	void load_car_camera(bool);
 private:
 	Lib3dsFile* file;
+	bool viewFromCamera;
+	float angle;
 };
 
 Car::Car()
 {
 	file=lib3ds_file_open("models/lamborgini/lamborgini.3ds");
 	generate_display_lists();
+	viewFromCamera=true;
+	angle=-90.0;
 }
 
 Car::~Car()
@@ -28,12 +33,33 @@ Car::~Car()
 }
 void Car::display()
 {
+	angle+=0.0;
+	if(viewFromCamera)
+	{
+		float M[4][4];
+		int c = lib3ds_file_camera_by_name(file, "Camera001");
+		Lib3dsCamera* camera = file->cameras[c];
+		Lib3dsCameraNode* camNode = lib3ds_node_new_camera(camera);
+		Lib3dsTargetNode* tgtNode = lib3ds_node_new_camera_target(camera);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluPerspective( camera->fov, 128/72, 0.1f, 6000.0);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glRotatef(angle, 1.0, 0,0);
+		//glRotatef(-10, 0.0, 0.0,1.0);
+		lib3ds_matrix_camera(M, camera->position, tgtNode->pos, camera->roll);
+		glMultMatrixf(&M[0][0]);
+	}
 	for(Lib3dsNode* node = file->nodes;node!=NULL;node=node->next)
 	{
 		render_node(node);
-	}	
+	}
 }
-
+void Car::load_car_camera(bool b)
+{
+	viewFromCamera=b;
+}
 void Car::generate_display_lists()
 {
 	Lib3dsNode		*p;
