@@ -10,7 +10,7 @@ using namespace std;
 
 //Global Variables
 Car* car;
-
+float angle = 0.0;
 
 
 //Use and Define as required. 
@@ -23,6 +23,11 @@ void motionFunc(int,int);
 void initObjects()
 {
 	car=new Car();
+}
+
+void display1(int x) {
+  glutPostRedisplay();
+  glutTimerFunc(10, display1, 0);
 }
 
 int main(int argc, char* argv[])
@@ -48,6 +53,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
 	initObjects();
+  glutTimerFunc(100, display1, 0);
 	glutMainLoop();
 	return 0;
 }
@@ -58,18 +64,15 @@ void reshapeFunc(int w, int h)
 		h = 1;
 
 	float ratio = 1.0 * w / h;
-	glLoadIdentity();
-	glMatrixMode(GL_PROJECTION);
 
 
 	glViewport(0, 0, w, h);
-
-	gluPerspective(45, ratio, 1, 1000);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+	gluPerspective(45, ratio, 1.0f, 1000.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(0.0, 0.0, 3.0,
-		0.0, 0.0, -1.0,
-		0.0, 1.0, 0.0);
+  glutPostRedisplay();
 }
 void keyboardFunc(unsigned char key, int x, int y)
 {
@@ -92,9 +95,12 @@ void displayFunc()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glutSolidSphere(5,16,16);
   glPushMatrix();
-  glTranslatef(0.0, -50.0, -300.0);
-  glRotatef(-90, 0.0, 1.0, 0.0);
+  glTranslatef(0.0, -60.0, -300.0);
+  glRotatef(angle, 0.0, 1.0, 0.0);
+  glRotatef(-10, 0.0, 0.0, 1.0);
 	car->display();
   glPopMatrix();
 	glutSwapBuffers();
+  angle += 0.4;
+  if (angle >= 360.0) angle = 0.0;
 }
