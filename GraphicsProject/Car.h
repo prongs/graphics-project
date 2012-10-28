@@ -20,9 +20,9 @@ private:
 
 Car::Car()
 {
-	file=lib3ds_file_open("models/audir8/audi.3ds");
+	file=lib3ds_file_open("models/audi/AudiR8.3DS");
 	generate_display_lists();
-	viewFromCamera=true;
+	viewFromCamera=false;
 	angle=-90.0;
 }
 
@@ -73,7 +73,7 @@ void Car::generate_display_lists()
 	int i;
 	for(Lib3dsNode* node = file->nodes;node!=NULL;node=node->next)
 	{
-		if(node->type==LIB3DS_NODE_MESH_INSTANCE)
+		if(node->type==LIB3DS_NODE_MESH_INSTANCE && strcmp(node->name, "$$$DUMMY") != 0)
 		{
 			mesh=lib3ds_file_mesh_for_node(file, node);
 			node->user_id=glGenLists(1);
@@ -129,7 +129,7 @@ void Car::render_node(Lib3dsNode* node)
 	{
 		render_node(p);
 	}
-	if (node->type==LIB3DS_NODE_MESH_INSTANCE)
+  if(node->type==LIB3DS_NODE_MESH_INSTANCE && strcmp(node->name, "$$$DUMMY") != 0)
 	{
 		glPushMatrix();
 		Lib3dsMeshInstanceNode* meshData= (Lib3dsMeshInstanceNode*)node;
