@@ -2,7 +2,9 @@
 #define Model_H
 #include "utils.h"
 #include <string.h>
-
+#include <string>
+#include <sstream>
+#include "BitmapTexture.h"
 using namespace std;
 
 class Model
@@ -14,7 +16,8 @@ public:
 	void render_node(Lib3dsNode*);
 	void generate_display_lists();
 	void load_Model_camera(bool);
-  void Model::process_node(Lib3dsNode* node);
+	void process_node(Lib3dsNode* node);
+	void process_materials();
 private:
 	Lib3dsFile* file;
 	bool viewFromCamera;
@@ -25,6 +28,7 @@ Model::Model(const char* filename)
 {
 	file=lib3ds_file_open(filename);
 	generate_display_lists();
+	process_materials();
 	viewFromCamera=false;
 	angle=-90.0;
 }
@@ -67,11 +71,11 @@ void Model::generate_display_lists()
 {
 	for(Lib3dsNode* node = file->nodes;node!=NULL;node=node->next)
 	{
-    process_node(node);
-    for(Lib3dsNode* p=node->childs;p!=NULL;p=p->next)
-    {
-      process_node(p);
-    }
+		process_node(node);
+		for(Lib3dsNode* p=node->childs;p!=NULL;p=p->next)
+		{
+			process_node(p);
+		}
 	}
 }
 
@@ -84,54 +88,56 @@ void Model::process_node(Lib3dsNode* node)
 	float	(*norm_verts)[3];
 	float   (*norm_faces)[3];
 	float		M[4][4];
-  if(node->type==LIB3DS_NODE_MESH_INSTANCE && strcmp(node->name, "$$$DUMMY") != 0)
-  {
-    mesh=lib3ds_file_mesh_for_node(file, node);
-    node->user_id=glGenLists(1);
-    glNewList(node->user_id, GL_COMPILE);
-    norm_verts=(float(*)[3])malloc(3*sizeof(*norm_verts)*mesh->nfaces);
-    norm_faces = (float(*)[3]) malloc(sizeof(*norm_faces)*mesh->nfaces);
-    lib3ds_matrix_copy(M, mesh->matrix);
-    lib3ds_matrix_inv(M);
-    glMultMatrixf(&M[0][0]);
-    lib3ds_mesh_calculate_face_normals(mesh, norm_faces);
-    lib3ds_mesh_calculate_vertex_normals(mesh, norm_verts);
-    for (int fi = 0; fi < mesh->nfaces; ++fi)
-    {
-      face=mesh->faces+fi;
-      mat=NULL;
-      if (face->material>=0 && face->material< file->nmaterials)
-        mat=file->materials[face->material];
-      if (mat)
-      {
-        float s = pow(2, 10.0*mat->shininess);
-        if (s>128.0) s = 128.0f;
-        glMaterialfv(GL_FRONT, GL_AMBIENT, mat->ambient);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat->diffuse);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, mat->specular);
-        glMaterialf(GL_FRONT, GL_SHININESS, s);
-      }
-      else {
-        float a[]={0.2, 0.2, 0.2, 1.0};
-        float d[]={0.8, 0.8, 0.8, 1.0};
-        float s[]={0.0, 0.0, 0.0, 1.0};
-        glMaterialfv(GL_FRONT, GL_AMBIENT, a);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, s);
-      }
-      // Draw tri-face
-      glBegin(GL_TRIANGLES);
-      glNormal3fv(norm_faces[fi]);	// face normal
-      for (int i=0; i<3; ++i) {
-        glNormal3fv(norm_verts[3*fi+i]);	// vertex normal
-        glVertex3fv(mesh->vertices[face->index[i]]);
-      }
-      glEnd();
-    }
-    free(norm_faces);
-    free(norm_verts);
-    glEndList();
-  }
+	if(node->type==LIB3DS_NODE_MESH_INSTANCE && strcmp(node->name, "$$$DUMMY") != 0)
+	{
+		mesh=lib3ds_file_mesh_for_node(file, node);
+		node->user_id=glGenLists(1);
+		glNewList(node->user_id, GL_COMPILE);
+		norm_verts=(float(*)[3])malloc(3*sizeof(*norm_verts)*mesh->nfaces);
+		norm_faces = (float(*)[3]) malloc(sizeof(*norm_faces)*mesh->nfaces);
+		lib3ds_matrix_copy(M, mesh->matrix);
+		lib3ds_matrix_inv(M);
+		glMultMatrixf(&M[0][0]);
+		lib3ds_mesh_calculate_face_normals(mesh, norm_faces);
+		lib3ds_mesh_calculate_vertex_normals(mesh, norm_verts);
+		for (int fi = 0; fi < mesh->nfaces; ++fi)
+		{
+			face=mesh->faces+fi;
+			mat=NULL;
+			if (face->material>=0 && face->material< file->nmaterials)
+				mat=file->materials[face->material];
+			if (mat)
+			{
+				float s = pow(2, 10.0*mat->shininess);
+				if (s>128.0) s = 128.0f;
+				glMaterialfv(GL_FRONT, GL_AMBIENT, mat->ambient);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, mat->diffuse);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, mat->specular);
+				glMaterialf(GL_FRONT, GL_SHININESS, s);
+			}
+			else {
+				float a[]={0.2, 0.2, 0.2, 1.0};
+				float d[]={0.8, 0.8, 0.8, 1.0};
+				float s[]={0.0, 0.0, 0.0, 1.0};
+				glMaterialfv(GL_FRONT, GL_AMBIENT, a);
+				glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
+				glMaterialfv(GL_FRONT, GL_SPECULAR, s);
+			}
+			// Draw tri-face
+			glBegin(GL_TRIANGLES);
+			glNormal3fv(norm_faces[fi]);	// face normal
+			for (int i=0; i<3; ++i) {
+				glNormal3fv(norm_verts[3*fi+i]);	// vertex normal
+				if(mat->texture1_map.name)
+					glTexCoord2fv(mesh->texcos[face->index[i]]);
+				glVertex3fv(mesh->vertices[face->index[i]]);
+			}
+			glEnd();
+		}
+		free(norm_faces);
+		free(norm_verts);
+		glEndList();
+	}
 }
 
 void Model::render_node(Lib3dsNode* node)
@@ -140,7 +146,7 @@ void Model::render_node(Lib3dsNode* node)
 	{
 		render_node(p);
 	}
-  if(node->type==LIB3DS_NODE_MESH_INSTANCE && strcmp(node->name, "$$$DUMMY") != 0)
+	if(node->type==LIB3DS_NODE_MESH_INSTANCE && strcmp(node->name, "$$$DUMMY") != 0)
 	{
 		glPushMatrix();
 		Lib3dsMeshInstanceNode* meshData= (Lib3dsMeshInstanceNode*)node;
@@ -150,4 +156,23 @@ void Model::render_node(Lib3dsNode* node)
 		glPopMatrix();
 	}
 }
+
+void Model::process_materials()
+{
+	for (int i = 0; i < file->nmaterials; i++)
+	{
+		Lib3dsMaterial* mat = file->materials[i];
+		Lib3dsTextureMap* tex = &mat->texture1_map;
+		if (tex->name)
+		{
+			stringstream name;
+			char fullname[12+64];
+			strcpy(fullname, "model/track/");
+			strcpy(fullname+12, tex->name);
+			LoadGLTextures(fullname, &tex->user_id);
+		}
+	}
+}
+
+
 #endif

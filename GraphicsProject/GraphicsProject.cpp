@@ -9,7 +9,7 @@ using namespace std;
 #include "Model.h"
 
 //Global Variables
-Model* car;
+Model *car, *track;
 float angle = 0.0;
 
 
@@ -23,6 +23,7 @@ void motionFunc(int,int);
 void initObjects()
 {
 	car=new Model("models/audi/AudiR8.3DS");
+	track= new Model("models/track/track.3ds");
 }
 
 void display1(int x) {
