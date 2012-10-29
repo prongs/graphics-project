@@ -11,7 +11,7 @@ using namespace std;
 //Global Variables
 Model *car, *track;
 float angle = 0.0;
-
+bool rot;
 
 //Use and Define as required. 
 void displayFunc();
@@ -23,7 +23,7 @@ void motionFunc(int,int);
 void initObjects()
 {
 	car=new Model("models/audi/AudiR8.3DS");
-	track= new Model("models/track/track.3ds");
+	//track= new Model("models/track/track.3ds");
 }
 
 void display1(int x) {
@@ -53,7 +53,9 @@ int main(int argc, char* argv[])
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
+  glEnable(GL_TEXTURE_2D);
 	initObjects();
+  rot = true;
   glutTimerFunc(100, display1, 0);
 	glutMainLoop();
 	return 0;
@@ -82,6 +84,11 @@ void keyboardFunc(unsigned char key, int x, int y)
 	case 27: //escape
 
 		exit(0);
+  case 32:
+
+    if (rot) rot = false;
+    else rot = true;
+    break;
 	}
 }
 
@@ -96,12 +103,13 @@ void displayFunc()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glutSolidSphere(5,16,16);
   glPushMatrix();
-  glTranslatef(0.0, -60.0, -300.0);
+  glTranslatef(0.0, -60.0, -400.0);
   glRotatef(angle, 0.0, 1.0, 0.0);
-  glRotatef(-10, 0.0, 0.0, 1.0);
+  glRotatef(-30, 1.0, 0.0, 0.0);
 	car->display();
+  //track->display();
   glPopMatrix();
 	glutSwapBuffers();
-  angle += 0.4;
+  if (rot)  angle += 0.4;
   if (angle >= 360.0) angle = 0.0;
 }

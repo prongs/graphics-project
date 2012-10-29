@@ -27,8 +27,8 @@ private:
 Model::Model(const char* filename)
 {
 	file=lib3ds_file_open(filename);
-	generate_display_lists();
 	process_materials();
+	generate_display_lists();
 	viewFromCamera=false;
 	angle=-90.0;
 }
@@ -124,12 +124,21 @@ void Model::process_node(Lib3dsNode* node)
 				glMaterialfv(GL_FRONT, GL_SPECULAR, s);
 			}
 			// Draw tri-face
+      bool map_textures = mat && mat->texture1_map.name[0];
+      GLenum error;
+      if (map_textures) 
+      {
+        glBindTexture(GL_TEXTURE_2D, mat->texture1_map.user_id);
+      }
+      error = glGetError();
 			glBegin(GL_TRIANGLES);
 			glNormal3fv(norm_faces[fi]);	// face normal
 			for (int i=0; i<3; ++i) {
 				glNormal3fv(norm_verts[3*fi+i]);	// vertex normal
-				if(mat->texture1_map.name)
+				if(map_textures) 
+        {
 					glTexCoord2fv(mesh->texcos[face->index[i]]);
+        }
 				glVertex3fv(mesh->vertices[face->index[i]]);
 			}
 			glEnd();
@@ -163,12 +172,12 @@ void Model::process_materials()
 	{
 		Lib3dsMaterial* mat = file->materials[i];
 		Lib3dsTextureMap* tex = &mat->texture1_map;
-		if (tex->name)
+		if (tex->name[0])
 		{
 			stringstream name;
-			char fullname[12+64];
-			strcpy(fullname, "model/track/");
-			strcpy(fullname+12, tex->name);
+			char fullname[13+64];
+			strcpy(fullname, "models/track/");
+			strcpy(fullname+13, tex->name);
 			LoadGLTextures(fullname, &tex->user_id);
 		}
 	}

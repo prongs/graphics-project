@@ -1,6 +1,8 @@
 #ifndef BITMAP_TEXTURE_H
 #define BITMAP_TEXTURE_H
 #include "utils.h"
+#include <direct.h>
+#define CurrDir _getcwd
 struct Image 
 {
 	unsigned long sizeX;								 	/**< length of the image.*/
@@ -29,6 +31,8 @@ int ImageLoad(char *filename, Image *image)
     unsigned short int bpp;             /**< number of bits per pixel (must be 24)*/
     char temp;                          /**< temporary color storage for bgr-rgb conversion.*/
 
+    char a[200];
+    CurrDir(a, 200);
     // make sure the file is there.
     if ((file = fopen(filename, "rb"))==NULL)
     {
