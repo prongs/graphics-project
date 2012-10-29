@@ -6,10 +6,10 @@
 #include "shaderutils.h"
 #include <lib3ds.h>
 using namespace std;
-#include "Car.h"
+#include "Model.h"
 
 //Global Variables
-Car* car;
+Model* car;
 float angle = 0.0;
 
 
@@ -22,7 +22,7 @@ void motionFunc(int,int);
 
 void initObjects()
 {
-	car=new Car();
+	car=new Model("models/audi/AudiR8.3DS");
 }
 
 void display1(int x) {
