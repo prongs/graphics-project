@@ -4,7 +4,7 @@
 #define RENDER_WIDTH 640.0
 #define RENDER_HEIGHT 480.0
 #define SHADOW_MAP_RATIO 2
-
+float light_mvnt = 30.0f;
 
 float p_light[3] = {3,20,0};
 GLuint fboId;
@@ -178,7 +178,7 @@ GLhandleARB loadShader(char* filename, unsigned int type)
 		glGetObjectParameterivARB(handle, GL_OBJECT_INFO_LOG_LENGTH_ARB, &errorLoglength);
 		
 		//Create a buffer to read compilation error message
-		errorLogText = malloc(sizeof(char) * errorLoglength);
+		errorLogText = (char*)malloc(sizeof(char) * errorLoglength);
 		
 		//Used to get the final length of the log.
 		glGetInfoLogARB(handle, errorLoglength, &actualErrorLogLength, errorLogText);
@@ -194,31 +194,14 @@ GLhandleARB loadShader(char* filename, unsigned int type)
 }
 
 
-void loadShadowShader()
-{
-	GLhandleARB vertexShaderHandle;
-	GLhandleARB fragmentShaderHandle;
-	
-	vertexShaderHandle   = loadShader("VertexShader.c",GL_VERTEX_SHADER);
-	fragmentShaderHandle = loadShader("FragmentShader.c",GL_FRAGMENT_SHADER);
-	
-	shadowShaderId = glCreateProgramObjectARB();
-	
-	glAttachObjectARB(shadowShaderId,vertexShaderHandle);
-	glAttachObjectARB(shadowShaderId,fragmentShaderHandle);
-	glLinkProgramARB(shadowShaderId);
-	
-	shadowMapUniform = glGetUniformLocationARB(shadowShaderId,"ShadowMap");
-}
-
 
 void loadShadowShader()
 {
 	GLhandleARB vertexShaderHandle;
 	GLhandleARB fragmentShaderHandle;
 	
-	vertexShaderHandle   = loadShader("VertexShader.c",GL_VERTEX_SHADER);
-	fragmentShaderHandle = loadShader("FragmentShader.c",GL_FRAGMENT_SHADER);
+	vertexShaderHandle   = loadShader("shadow.vert",GL_VERTEX_SHADER);
+	fragmentShaderHandle = loadShader("shadow.frag",GL_FRAGMENT_SHADER);
 	
 	shadowShaderId = glCreateProgramObjectARB();
 	

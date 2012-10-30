@@ -92,7 +92,6 @@ void Model::process_node(Lib3dsNode* node)
 	{
 		mesh=lib3ds_file_mesh_for_node(file, node);
 		node->user_id=glGenLists(1);
-		glNewList(node->user_id, GL_COMPILE);
 		norm_verts=(float(*)[3])malloc(3*sizeof(*norm_verts)*mesh->nfaces);
 		norm_faces = (float(*)[3]) malloc(sizeof(*norm_faces)*mesh->nfaces);
 		lib3ds_matrix_copy(M, mesh->matrix);
