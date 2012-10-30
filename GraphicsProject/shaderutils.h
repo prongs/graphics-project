@@ -3,14 +3,21 @@
 
 #define RENDER_WIDTH 640.0
 #define RENDER_HEIGHT 480.0
-#define SHADOW_MAP_RATIO 2
-float light_mvnt = 30.0f;
+#define SHADOW_MAP_RATIO 4
 
-float p_light[3] = {0.0, 100.0, -300.0};
-float p_camera[3] = {0,0,0};
 
-float l_light[3] = {0,-60.0,-400.0};
-float l_camera[3] = {0,0,-400.0};
+//Camera position
+float p_camera[3] = {32,20,0};
+
+//Camera lookAt
+float l_camera[3] = {2,0,-10};
+
+//Light position
+float p_light[3] = {3,20,0};
+
+//Light lookAt
+float l_light[3] = {0,0,-5};
+
 GLuint fboId;
 
 // Z values will be rendered to this texture when using fboId framebuffer
@@ -277,17 +284,6 @@ void setupMatrices(float position_x,float position_y,float position_z,float look
 
 
 // This update only change the position of the light.
-//int elapsedTimeCounter = 0;
-void update(void)
-{
-	
-	p_light[0] = light_mvnt * cos(glutGet(GLUT_ELAPSED_TIME)/1000.0);
-	p_light[2] = light_mvnt * sin(glutGet(GLUT_ELAPSED_TIME)/1000.0);
-	
-	//p_light[0] = light_mvnt * cos(3652/1000.0);
-	//p_light[2] = light_mvnt * sin(3652/1000.0);
-}
-
 
 void setTextureMatrix(void)
 {
