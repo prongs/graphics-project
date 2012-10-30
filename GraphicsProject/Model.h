@@ -1,6 +1,7 @@
 #ifndef Model_H
 #define Model_H
 #include "utils.h"
+#include "shaderutils.h"
 #include <string.h>
 #include <string>
 #include <sstream>
@@ -41,6 +42,8 @@ Model::~Model()
 void Model::display()
 {
 	angle+=0.0;
+
+  // NEVER USED, DONT MODIFY
 	if(viewFromCamera)
 	{
 		float M[4][4];
@@ -159,8 +162,9 @@ void Model::render_node(Lib3dsNode* node)
 		glPushMatrix();
 		Lib3dsMeshInstanceNode* meshData= (Lib3dsMeshInstanceNode*)node;
 		glMultMatrixf(&node->matrix[0][0]);
-		glTranslatef(-meshData->pivot[0], -meshData->pivot[1], -meshData->pivot[2]);
+		startTranslate(-meshData->pivot[0], -meshData->pivot[1], -meshData->pivot[2]);
 		glCallList(node->user_id);
+    endTranslate();
 		glPopMatrix();
 	}
 }

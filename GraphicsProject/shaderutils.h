@@ -6,7 +6,11 @@
 #define SHADOW_MAP_RATIO 2
 float light_mvnt = 30.0f;
 
-float p_light[3] = {3,20,0};
+float p_light[3] = {0.0, 100.0, -300.0};
+float p_camera[3] = {0,0,0};
+
+float l_light[3] = {0,-60.0,-400.0};
+float l_camera[3] = {0,0,-400.0};
 GLuint fboId;
 
 // Z values will be rendered to this texture when using fboId framebuffer
@@ -341,3 +345,31 @@ void endTranslate(	)
 }
 
 
+
+void startRotate(float angle, float x,float y,float z)
+{
+	glPushMatrix();
+	glRotatef(angle, x,y,z);
+	
+	glMatrixMode(GL_TEXTURE);
+	glActiveTextureARB(GL_TEXTURE7);
+	glPushMatrix();
+	glRotatef(angle, x,y,z);
+}
+
+void endRotate()
+{
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+}
+
+void setupCameraMatrices()
+{
+  setupMatrices(p_camera[0], p_camera[1], p_camera[2],l_camera[0], l_camera[1], l_camera[2]);
+}
+
+void setupLightMatrices()
+{
+  setupMatrices(p_light[0], p_light[1], p_light[2],l_light[0], l_light[1], l_light[2]);
+}

@@ -3,10 +3,9 @@
 
 #include "stdafx.h"
 #include "utils.h"
-#include "shaderutils.h"
+#include "Model.h"
 #include <lib3ds.h>
 using namespace std;
-#include "Model.h"
 
 //Global Variables
 Model *car, *track;
@@ -22,8 +21,8 @@ void motionFunc(int,int);
 
 void initObjects()
 {
-	car=new Model("models/audi/AudiR8.3DS");
-	//track= new Model("models/track/track.3ds");
+	//car=new Model("models/audi/AudiR8.3DS");
+	track= new Model("models/track/track.3ds");
 }
 
 void display1(int x) {
@@ -45,7 +44,10 @@ int main(int argc, char* argv[])
 	glutKeyboardFunc(keyboardFunc);
 	glutMouseFunc(mouseFunc);
 	glutMotionFunc(motionFunc);
+
+  // required for shadow mapping
 	glEnable(GL_DEPTH_TEST);
+
 	glewInit();
 	glMatrixMode(GL_PROJECTION);
 	gluLookAt(0.0, 0.0, 99.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0);
@@ -98,18 +100,59 @@ void mouseFunc(int button, int state, int x, int y)
 void motionFunc(int x, int y)
 {
 }
-void displayFunc()
+void drawObjects()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glutSolidSphere(5,16,16);
-  glPushMatrix();
-  glTranslatef(0.0, -60.0, -400.0);
-  glRotatef(angle, 0.0, 1.0, 0.0);
-  glRotatef(-30, 1.0, 0.0, 0.0);
-	car->display();
-  //track->display();
-  glPopMatrix();
-	glutSwapBuffers();
+  startTranslate(0.0, -60.0, -400.0);
+  startRotate(angle, 0.0, 1.0, 0.0);
+  startRotate(-30, 1.0, 0.0, 0.0);
+	//car->display();
+  track->display();
+  endRotate();
+  endRotate();
+  endTranslate();
+
   if (rot)  angle += 0.4;
   if (angle >= 360.0) angle = 0.0;
+}
+
+void displayFunc()
+{
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId);
+
+  glUseProgramObjectARB(0);
+  
+  glViewport(0, 0, RENDER_WIDTH*SHADOW_MAP_RATIO, RENDER_HEIGHT*SHADOW_MAP_RATIO);
+
+  glClear(GL_DEPTH_BUFFER_BIT);
+
+  glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+  setupLightMatrices();
+
+  glCullFace(GL_FRONT);
+  drawObjects();
+
+  setTextureMatrix();
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+  glViewport(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+  glUseProgramObjectARB(shadowShaderId);
+  glUniform1iARB(shadowMapUniform, 7);
+  glActiveTextureARB(GL_TEXTURE7);
+  glBindTexture(GL_TEXTURE_2D, depthTextureId);
+
+  setupCameraMatrices();
+
+  glCullFace(GL_BACK);
+  drawObjects();
+
+  glutSwapBuffers();
 }
