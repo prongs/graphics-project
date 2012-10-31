@@ -30,6 +30,7 @@ void loadModels()
 
 // This update only change the position of the light.
 //int elapsedTimeCounter = 0;
+bool whether_update=true;
 void update(void)
 {
 	
@@ -58,7 +59,7 @@ void drawObjects(void)
   glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
   glMaterialfv(GL_FRONT, GL_SPECULAR, s);
   glMaterialf(GL_FRONT, GL_SHININESS, 4.0);
-	startTranslate(0,4,-5);
+	startTranslate(10,4,-5);
 	glutSolidCube(4);
 	endTransformation();
 	
@@ -92,7 +93,7 @@ void drawCar(void)
 
 void renderScene(void) 
 {
-	update();
+	if(whether_update) update();
 	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);
 	glUseProgramObjectARB(0);
@@ -160,8 +161,17 @@ void renderScene(void)
 
 void processNormalKeys(unsigned char key, int x, int y) {
 	
-	if (key == 27) 
+	switch(key)
+	{
+	case 27:
 		exit(0);
+	case '\r':
+	case '\n':
+		if(whether_update)
+			debug(p_light[0],p_light[1],p_light[2]);
+		whether_update=!whether_update;
+		break;
+	}
 }
 
 
