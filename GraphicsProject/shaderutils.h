@@ -1,9 +1,12 @@
+#ifndef SHADERUTILS_H
+#define SHADERUTILS_H
+
 #include "utils.h"
 
 
 #define RENDER_WIDTH 640.0
 #define RENDER_HEIGHT 480.0
-#define SHADOW_MAP_RATIO 4
+#define SHADOW_MAP_RATIO 2
 
 
 //Camera position
@@ -13,10 +16,10 @@ float p_camera[3] = {32,20,0};
 float l_camera[3] = {2,0,-10};
 
 //Light position
-float p_light[3] = {3,20,0};
+float p_light[3] = {-330,-20,-100};
 
 //Light lookAt
-float l_light[3] = {0,0,-5};
+float l_light[3] = {-330,-100,-100};
 
 GLuint fboId;
 
@@ -272,14 +275,15 @@ void generateShadowFBO()
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
-void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z)
+void setupMatrices(float position_x,float position_y,float position_z,float lookAt_x,float lookAt_y,float lookAt_z, bool light)
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,10,40000);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
+  if (!light)	gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
+  else 	gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,0,1);
 }
 
 
@@ -331,16 +335,9 @@ void startTranslate(float x,float y,float z)
 	glActiveTextureARB(GL_TEXTURE7);
 	glPushMatrix();
 	glTranslatef(x,y,z);
+
+  glMatrixMode(GL_MODELVIEW);
 }
-
-void endTranslate(	)
-{
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-}
-
-
 
 void startRotate(float angle, float x,float y,float z)
 {
@@ -351,21 +348,42 @@ void startRotate(float angle, float x,float y,float z)
 	glActiveTextureARB(GL_TEXTURE7);
 	glPushMatrix();
 	glRotatef(angle, x,y,z);
+
+  glMatrixMode(GL_MODELVIEW);
 }
 
-void endRotate()
+void startScale(float sx, float sy, float sz)
 {
+	glPushMatrix();
+  glScalef(sx, sy, sz);
+	
+	glMatrixMode(GL_TEXTURE);
+	glActiveTextureARB(GL_TEXTURE7);
+	glPushMatrix();
+  glScalef(sx, sy, sz);
+
+  glMatrixMode(GL_MODELVIEW);
+}
+
+void endTransformation(void)
+{
+	glMatrixMode(GL_TEXTURE);
+	glActiveTextureARB(GL_TEXTURE7);
 	glPopMatrix();
+
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 }
 
-void setupCameraMatrices()
-{
-  setupMatrices(p_camera[0], p_camera[1], p_camera[2],l_camera[0], l_camera[1], l_camera[2]);
-}
+//void setupCameraMatrices()
+//{
+//  setupMatrices(p_camera[0], p_camera[1], p_camera[2],l_camera[0], l_camera[1], l_camera[2]);
+//}
+//
+//void setupLightMatrices()
+//{
+//  setupMatrices(p_light[0], p_light[1], p_light[2],l_light[0], l_light[1], l_light[2]);
+//}
+//
 
-void setupLightMatrices()
-{
-  setupMatrices(p_light[0], p_light[1], p_light[2],l_light[0], l_light[1], l_light[2]);
-}
+#endif

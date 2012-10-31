@@ -1,6 +1,9 @@
 uniform sampler2D ShadowMap;
 
 varying vec4 ShadowCoord;
+varying vec3 normal;
+varying vec3 vert_to_light;
+varying vec3 eyeVector;
 
 void main()
 {	
@@ -17,7 +20,22 @@ void main()
  	if (ShadowCoord.w > 0.0)
  		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
   	
+  	vec3 N = normalize(normal);
+  	vec3 L = normalize(vert_to_light);
+    float diffuse_term = clamp(dot(N, L), 0.0, 1.0);
+
+    vec3 H = normalize(N + L);
+    float specular_term = clamp(dot(N, H), 0.0, 1.0);
+
+    vec4 ambient_col = vec4(gl_LightSource[0].ambient * gl_FrontMaterial.ambient);
+
+    vec4 diffuse_col = vec4(gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse);
+
+    vec4 specular_col = vec4(gl_LightSource[0].specular * gl_FrontMaterial.specular);
 	
-  	gl_FragColor =	 shadow * gl_Color;
+  	gl_FragColor =	 (ambient_col + diffuse_col*diffuse_term + specular_col*pow(specular_term, gl_FrontMaterial.shininess) * shadow);
+	
+	// gl_FragColor =	 diffuse_col * shadow;
+
   
 }
