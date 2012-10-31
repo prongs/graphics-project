@@ -23,7 +23,7 @@ float light_mvnt = 30.0f;
 Model *car, *track;
 void loadModels()
 {
-  car=new Model("models/audi/audir8.3ds");
+  //car=new Model("models/audi/audir8.3ds");
   //track=new Model("models/track/track_simple.3ds");
 }
 
@@ -35,6 +35,8 @@ void update(void)
 	
 	p_light[0] = light_mvnt * cos(glutGet(GLUT_ELAPSED_TIME)/1000.0);
 	p_light[2] = light_mvnt * sin(glutGet(GLUT_ELAPSED_TIME)/1000.0);
+
+  glLightfv(GL_LIGHT0, GL_POSITION, p_light);
 	
 	//p_light[0] = light_mvnt * cos(3652/1000.0);
 	//p_light[2] = light_mvnt * sin(3652/1000.0);
@@ -51,7 +53,7 @@ void drawObjects(void)
 	
   float a[]={0.2, 0.2, 0.2, 1.0};
   float d[]={0.8, 0.1, 0.8, 1.0};
-  float s[]={0.0, 0.0, 0.0, 1.0};
+  float s[]={0.5, 0.5, 0.5, 1.0};
   glMaterialfv(GL_FRONT, GL_AMBIENT, a);
   glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
   glMaterialfv(GL_FRONT, GL_SPECULAR, s);
@@ -90,7 +92,7 @@ void drawCar(void)
 
 void renderScene(void) 
 {
-	//update();
+	update();
 	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);
 	glUseProgramObjectARB(0);
@@ -104,9 +106,9 @@ void renderScene(void)
 	
 	setupMatrices(p_light[0],p_light[1],p_light[2],l_light[0],l_light[1],l_light[2], true);
 	
-	//glCullFace(GL_FRONT);
-  //drawObjects();
-	drawCar();
+	glCullFace(GL_FRONT);
+  drawObjects();
+	//drawCar();
 	
 	setTextureMatrix();
 	
@@ -126,8 +128,8 @@ void renderScene(void)
 	setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
 	
 	glCullFace(GL_BACK);
-  //drawObjects();
-	drawCar();
+  drawObjects();
+	//drawCar();
 	
 	// DEBUG only. this piece of code draw the depth buffer onscreen
 	
@@ -181,6 +183,12 @@ int main(int argc, char** argv)
 	
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
+  float a[]={0.4, 0.4, 0.4, 1.0};
+  float d[]={0.8, 0.8, 0.8, 1.0};
+  float s[]={0.5, 0.5, 0.5, 1.0};
+  glLightfv(GL_LIGHT0, GL_AMBIENT, a);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, d);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, s);
   glLightfv(GL_LIGHT0, GL_POSITION, p_light);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 	

@@ -16,10 +16,10 @@ float p_camera[3] = {32,20,0};
 float l_camera[3] = {2,0,-10};
 
 //Light position
-float p_light[3] = {-330,-20,-100};
+float p_light[3] = {3,20,0};
 
 //Light lookAt
-float l_light[3] = {-330,-100,-100};
+float l_light[3] = {0,0,-5};
 
 GLuint fboId;
 
@@ -282,8 +282,7 @@ void setupMatrices(float position_x,float position_y,float position_z,float look
 	gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,10,40000);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-  if (!light)	gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
-  else 	gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,0,1);
+  gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
 }
 
 

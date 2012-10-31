@@ -18,7 +18,7 @@ void main()
 	
  	float shadow = 1.0;
  	if (ShadowCoord.w > 0.0)
- 		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
+ 		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 1.0 : 1.0 ;
   	
   	vec3 N = normalize(normal);
   	vec3 L = normalize(vert_to_light);
@@ -35,7 +35,7 @@ void main()
 	
   	gl_FragColor =	 (ambient_col + diffuse_col*diffuse_term + specular_col*pow(specular_term, gl_FrontMaterial.shininess) * shadow);
 	
-	// gl_FragColor =	 diffuse_col * shadow;
+	// gl_FragColor =	 gl_Color * shadow;
 
   
 }
