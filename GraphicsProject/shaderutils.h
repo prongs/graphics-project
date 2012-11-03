@@ -2,7 +2,7 @@
 #define SHADERUTILS_H
 
 #include "utils.h"
-
+#include <stack>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -13,11 +13,15 @@
 #define RENDER_HEIGHT 480.0
 #define SHADOW_MAP_RATIO 2
 
-
+using namespace std;
 
 glm::mat4 projectionMatrix; // Store the projection matrix
 glm::mat4 viewMatrix; // Store the view matrix
 glm::mat4 modelMatrix; // Store the model matrix
+
+stack<glm::mat4> modelMatrixStack;
+
+
 
 int projectionMatrixLocation;
 int viewMatrixLocation;
@@ -300,12 +304,15 @@ void setupMatrices(float position_x,float position_y,float position_z,float look
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,10,40000); //This is used in the default pipeline --render from light's POV
+	modelMatrix = glm::mat4();
+	gluPerspective(95,RENDER_WIDTH/RENDER_HEIGHT,10,40000); //This is used in the default pipeline --render from light's POV
 	//TODO: eliminate last line.
 	projectionMatrix = glm::perspective(45.0f, (float)RENDER_WIDTH/(float)RENDER_HEIGHT, 10.0f, 40000.0f); //this is used in modified pipeline -- our new render
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-  gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
+	gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
+	if(!light)
+	viewMatrix = glm::lookAt(glm::vec3(position_x, position_y, position_z), glm::vec3(lookAt_x,lookAt_y,lookAt_z), glm::vec3(0.0f,1.0f,0.0f));
 }
 
 
@@ -348,11 +355,14 @@ void setTextureMatrix(void)
 
 // During translation, we also have to maintain the GL_TEXTURE8, used in the shadow shader
 // to determine if a vertex is in the shadow.
+//TODO: change startRotate and startScale too. 
 void startTranslate(float x,float y,float z)
 {
+	modelMatrixStack.push(modelMatrix);
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(x,y,z));
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
 	glPushMatrix();
 	glTranslatef(x,y,z);
-	
 	glMatrixMode(GL_TEXTURE);
 	glActiveTextureARB(GL_TEXTURE7);
 	glPushMatrix();
@@ -363,6 +373,8 @@ void startTranslate(float x,float y,float z)
 
 void startRotate(float angle, float x,float y,float z)
 {
+	modelMatrixStack.push(modelMatrix);
+	modelMatrix = glm::rotate(modelMatrix,angle, glm::vec3(x,y,z));
 	glPushMatrix();
 	glRotatef(angle, x,y,z);
 	
@@ -376,8 +388,10 @@ void startRotate(float angle, float x,float y,float z)
 
 void startScale(float sx, float sy, float sz)
 {
+	modelMatrixStack.push(modelMatrix);
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(sx,sy,sz));
 	glPushMatrix();
-  glScalef(sx, sy, sz);
+	glScalef(sx, sy, sz);
 	
 	glMatrixMode(GL_TEXTURE);
 	glActiveTextureARB(GL_TEXTURE7);
@@ -395,6 +409,9 @@ void endTransformation(void)
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+	modelMatrix = modelMatrixStack.top();
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+	modelMatrixStack.pop();
 }
 
 //void setupCameraMatrices()

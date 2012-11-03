@@ -19,7 +19,7 @@ void main()
 
      	ShadowCoord= gl_TextureMatrix[7] * gl_Vertex;
   
-		gl_Position = projectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+		gl_Position = projectionMatrix * viewMatrix * modelMatrix * gl_Vertex;
 
 		normal = gl_NormalMatrix * gl_Normal;
 
