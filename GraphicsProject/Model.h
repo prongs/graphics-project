@@ -43,24 +43,6 @@ void Model::display()
 {
 	angle+=0.0;
 
-  // NEVER USED, DONT MODIFY
-	if(viewFromCamera)
-	{
-		float M[4][4];
-		int c = lib3ds_file_camera_by_name(file, "Camera001");
-		Lib3dsCamera* camera = file->cameras[c];
-		Lib3dsCameraNode* camNode = lib3ds_node_new_camera(camera);
-		Lib3dsTargetNode* tgtNode = lib3ds_node_new_camera_target(camera);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluPerspective( camera->fov, 128/72, 0.1f, 6000.0);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glRotatef(angle, 1.0, 0,0);
-		//glRotatef(-10, 0.0, 0.0,1.0);
-		lib3ds_matrix_camera(M, camera->position, tgtNode->pos, camera->roll);
-		glMultMatrixf(&M[0][0]);
-	}
 	for(Lib3dsNode* node = file->nodes;node!=NULL;node=node->next)
 	{
 		render_node(node);

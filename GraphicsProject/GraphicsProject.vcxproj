@@ -45,7 +45,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>libraries\freeglutFiles;$(ExecutablePath);$(VCInstallDir)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(ProgramFiles)\HTML Help Workshop;$(MSBuildToolsPath32);$(VSInstallDir);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
-    <IncludePath>libraries\glew-1.8.0\include;libraries\glload\include;libraries\freeglutFiles\include;libraries\lib3ds\src;$(IncludePath);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>libraries\glm-0.9.3.4;libraries\glew-1.8.0\include;libraries\glload\include;libraries\freeglutFiles\include;libraries\lib3ds\src;$(IncludePath);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>libraries\glew-1.8.0\lib;libraries\glload\lib;libraries\freeglutFiles\x64;libraries\freeglutFiles;$(LibraryPath);$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -109,6 +109,10 @@
     <ProjectReference Include="libraries\lib3ds\src\lib3ds.vcxproj">
       <Project>{9cf2b398-9087-4d33-90eb-0320f42c78f4}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shadow.frag" />
+    <None Include="shadow.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

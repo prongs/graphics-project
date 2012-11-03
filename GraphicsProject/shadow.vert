@@ -1,4 +1,12 @@
 // Used for shadow lookup
+
+
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 modelMatrix;
+
+
+
 varying vec4 ShadowCoord;
 varying vec3 normal;
 varying vec3 vert_to_light;
@@ -11,7 +19,7 @@ void main()
 
      	ShadowCoord= gl_TextureMatrix[7] * gl_Vertex;
   
-		gl_Position = ftransform();
+		gl_Position = projectionMatrix * gl_ModelViewMatrix * gl_Vertex;
 
 		normal = gl_NormalMatrix * gl_Normal;
 

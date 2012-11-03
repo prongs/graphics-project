@@ -3,10 +3,26 @@
 
 #include "utils.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+
+
 
 #define RENDER_WIDTH 640.0
 #define RENDER_HEIGHT 480.0
 #define SHADOW_MAP_RATIO 2
+
+
+
+glm::mat4 projectionMatrix; // Store the projection matrix
+glm::mat4 viewMatrix; // Store the view matrix
+glm::mat4 modelMatrix; // Store the model matrix
+
+int projectionMatrixLocation;
+int viewMatrixLocation;
+int modelMatrixLocation;
+
 
 
 //Camera position
@@ -19,7 +35,7 @@ float l_camera[3] = {2,0,-10};
 float p_light[3] = {3,20,0};
 
 //Light lookAt
-float l_light[3] = {0,0,-5};
+float l_light[3] = {0,0,-1};
 
 GLuint fboId;
 
@@ -224,6 +240,11 @@ void loadShadowShader()
 	glLinkProgramARB(shadowShaderId);
 	
 	shadowMapUniform = glGetUniformLocationARB(shadowShaderId,"ShadowMap");
+
+	projectionMatrixLocation = glGetUniformLocation(shadowShaderId, "projectionMatrix"); // Get the location of our projection matrix in the shader
+	viewMatrixLocation = glGetUniformLocation(shadowShaderId, "viewMatrix"); // Get the location of our view matrix in the shader
+	modelMatrixLocation = glGetUniformLocation(shadowShaderId, "modelMatrix"); // Get the location of our model matrix in the shader
+
 }
 
 void generateShadowFBO()
@@ -279,7 +300,9 @@ void setupMatrices(float position_x,float position_y,float position_z,float look
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,10,40000);
+	gluPerspective(45,RENDER_WIDTH/RENDER_HEIGHT,10,40000); //This is used in the default pipeline --render from light's POV
+	//TODO: eliminate last line.
+	projectionMatrix = glm::perspective(45.0f, (float)RENDER_WIDTH/(float)RENDER_HEIGHT, 10.0f, 40000.0f); //this is used in modified pipeline -- our new render
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
   gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
