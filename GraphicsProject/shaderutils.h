@@ -375,6 +375,7 @@ void startRotate(float angle, float x,float y,float z)
 {
 	modelMatrixStack.push(modelMatrix);
 	modelMatrix = glm::rotate(modelMatrix,angle, glm::vec3(x,y,z));
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
 	glPushMatrix();
 	glRotatef(angle, x,y,z);
 	
@@ -390,6 +391,7 @@ void startScale(float sx, float sy, float sz)
 {
 	modelMatrixStack.push(modelMatrix);
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(sx,sy,sz));
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
 	glPushMatrix();
 	glScalef(sx, sy, sz);
 	
