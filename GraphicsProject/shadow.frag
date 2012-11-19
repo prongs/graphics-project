@@ -1,24 +1,46 @@
-uniform sampler2D ShadowMap;
+uniform sampler2DShadow ShadowMap;
 
 varying vec4 ShadowCoord;
 varying vec3 normal;
 varying vec3 vert_to_light;
 varying vec3 eyeVector;
-
+uniform float xPixelOffset ;
+uniform float yPixelOffset ;
+	
+float lookup( vec2 offSet)
+{
+	// Values are multiplied by ShadowCoord.w because shadow2DProj does a W division for us.
+	return shadow2DProj(ShadowMap, ShadowCoord + vec4(offSet.x * xPixelOffset * ShadowCoord.w, offSet.y * yPixelOffset * ShadowCoord.w, 0.05, 0.0) ).z;
+}
+	
 void main()
 {	
-	vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
+//	vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
 	
 	// Used to lower moiré pattern and self-shadowing
-	shadowCoordinateWdivide.z += 0.0005;
+//	shadowCoordinateWdivide.z += 0.0005;
 	
 	
-	float distanceFromLight = texture2D(ShadowMap,shadowCoordinateWdivide.st).z;
+//	float distanceFromLight = texture2D(ShadowMap,shadowCoordinateWdivide.st).z;
 	
 	
- 	float shadow = 1.0;
- 	if (ShadowCoord.w > 0.0)
- 		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
+ //	float shadow = 1.0;
+ //	if (ShadowCoord.w > 0.0)
+ //		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
+
+	float shadow;
+		
+	// Avoid counter shadow
+	if (ShadowCoord.w > 1.0)
+	{
+		float x,y;
+		for (y = -1.5 ; y <=1.5 ; y+=1.0)
+			for (x = -1.5 ; x <=1.5 ; x+=1.0)
+				shadow += lookup(vec2(x,y));
+		
+		shadow /= 16.0 ;
+
+	}
   	
   	vec3 N = normalize(normal);
   	vec3 L = normalize(vert_to_light);
@@ -37,7 +59,7 @@ void main()
 	
   	vec4 col =	 (ambient_col + diffuse_col*diffuse_term + specular_col*pow(specular_term, gl_FrontMaterial.shininess) * shadow);
 	
-	gl_FragColor =	 vec4(vec3(col)*shadow,1.0);
+	gl_FragColor =	 vec4(vec3(col)*(shadow + 0.2),1.0);
 
   
 }

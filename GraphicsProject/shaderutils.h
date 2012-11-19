@@ -49,6 +49,8 @@ GLuint depthTextureId;
 // Use to activate/disable shadowShader
 GLhandleARB shadowShaderId;
 GLuint shadowMapUniform;
+GLuint shadowMapStepXUniform;
+GLuint shadowMapStepYUniform;
 
 
 char*
@@ -244,6 +246,8 @@ void loadShadowShader()
 	glLinkProgramARB(shadowShaderId);
 	
 	shadowMapUniform = glGetUniformLocationARB(shadowShaderId,"ShadowMap");
+  shadowMapStepXUniform = glGetUniformLocationARB(shadowShaderId,"xPixelOffset");
+	shadowMapStepYUniform = glGetUniformLocationARB(shadowShaderId,"yPixelOffset");
 
 	projectionMatrixLocation = glGetUniformLocation(shadowShaderId, "projectionMatrix"); // Get the location of our projection matrix in the shader
 	viewMatrixLocation = glGetUniformLocation(shadowShaderId, "viewMatrix"); // Get the location of our view matrix in the shader
@@ -272,6 +276,9 @@ void generateShadowFBO()
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 	
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
 	//glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor );
 	
 	

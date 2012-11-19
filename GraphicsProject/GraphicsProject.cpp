@@ -6,6 +6,7 @@
 #include "Model.h"
 #include <lib3ds.h>
 #include "shaderutils.h"
+#include <omp.h>
 using namespace std;
 
 #ifdef _WIN32
@@ -20,6 +21,7 @@ using namespace std;
 //Light mouvement circle radius
 float light_mvnt = 30.0f;
 
+double draw_time;
 Model *car, *track;
 void loadModels()
 {
@@ -52,15 +54,15 @@ void drawObjects(void)
 	glutSolidCube(4);
 	endTransformation();
 	(modelMatrix, viewMatrix, projectionMatrix);
-  float a[]={0.2, 0.2, 0.2, 1.0};
-  float d[]={0.8, 0.1, 0.8, 1.0};
-  float s[]={0.5, 0.5, 0.5, 1.0};
-  glMaterialfv(GL_FRONT, GL_AMBIENT, a);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
-  glMaterialfv(GL_FRONT, GL_SPECULAR, s);
-  glMaterialf(GL_FRONT, GL_SHININESS, 4.0);
+	float a[]={0.2, 0.2, 0.2, 1.0};
+	float d[]={0.8, 0.1, 0.8, 1.0};
+	float s[]={0.5, 0.5, 0.5, 1.0};
+	glMaterialfv(GL_FRONT, GL_AMBIENT, a);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, s);
+	glMaterialf(GL_FRONT, GL_SHININESS, 4.0);
 	startTranslate(10,4,-5);
-	glutSolidCube(4);
+  glutSolidSphere(2, 128, 128);
 	endTransformation();
 	
 	glColor4f(0.3f,0.3f,0.3f,1);
@@ -93,6 +95,7 @@ void drawCar(void)
 
 void renderScene(void) 
 {
+
 	if(whether_update) update();
 	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);
@@ -123,6 +126,8 @@ void renderScene(void)
 
 	glUseProgramObjectARB(shadowShaderId);
 	glUniform1iARB(shadowMapUniform,7);
+  glUniform1fARB(shadowMapStepXUniform,1.0/ (RENDER_WIDTH * SHADOW_MAP_RATIO));
+	glUniform1fARB(shadowMapStepYUniform,1.0/ (RENDER_HEIGHT * SHADOW_MAP_RATIO));
 
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]); // Send our projection matrix to the shader
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
@@ -164,6 +169,11 @@ void renderScene(void)
 	 //
 	
 	glutSwapBuffers();
+  double draw_time2 = omp_get_wtime();
+  double diff = draw_time2-draw_time;
+  double fps = 1.0/diff;
+  draw_time = draw_time2;
+  cout<<fps<<endl;
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
@@ -214,6 +224,6 @@ int main(int argc, char** argv)
 	
 	glutKeyboardFunc(processNormalKeys);
   loadModels();
-	
+  draw_time = omp_get_wtime();
 	glutMainLoop();
 }
