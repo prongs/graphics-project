@@ -4,6 +4,7 @@ uniform mat4 previousProjectionMatrix;
 uniform mat4 previousViewMatrix;
 uniform int RENDER_WIDTH;
 uniform int RENDER_HEIGHT;
+uniform bool first_frame;
 
 varying vec4 ShadowCoord;
 varying vec3 normal;
@@ -22,7 +23,7 @@ float lookup( vec2 offSet)
 void main()
 {	
 
-	int numSamples = 1;
+	int numSamples = 9;
 	vec4 prevPos = previousProjectionMatrix * previousViewMatrix * pos;
 	prevPos = prevPos/prevPos.w;
 	int prevPos_x = int((prevPos.s+1)*RENDER_WIDTH/2.0);
@@ -33,10 +34,13 @@ void main()
 	vec4 blurColor = vec4(0,0,0,0);
 	for(int i = 0; i < numSamples-1; i++, samplePos+=velocity)
 	{
-		blurColor += texture2D(pervFrame, samplePos);
+		blurColor += texture(pervFrame, vec2(0.5,0.5));
 	}
-	//if(dot(blurColor, blurColor)<64.9)
-	//	numSamples=1;
+	if(blurColor.x==0)
+	{
+		gl_FragColor = vec4(1,0,0,1);
+		//return;
+	}
 /*
 	if(prevPos_y<100.0)
 		{
@@ -91,6 +95,7 @@ void main()
 	
 	vec4 curColor =	 vec4(vec3(col)*(shadow + 0.2),1.0);
 
-	gl_FragColor = (numSamples==1)?curColor:(blurColor + curColor)/numSamples;
-  
+	gl_FragColor = (first_frame)?curColor:(blurColor + curColor)/numSamples;
+	gl_FragColor = texture2D(pervFrame, vec2(prevPos_x, prevPos_y));
 }
+

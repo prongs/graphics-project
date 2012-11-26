@@ -33,6 +33,9 @@ int modelMatrixLocation;
 int previousProjectionMatrixLocation;
 int previousViewMatrixLocation;
 
+
+
+int firstFrameBoolLoc;
 int prevFrameLocation;
 int renderWidthLocation;
 int renderHeightLocation;
@@ -460,7 +463,7 @@ void motionBlurInit()
 	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap generation included in OpenGL v1.4
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, RENDER_WIDTH, RENDER_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
+	firstFrameBoolLoc = glGetUniformLocation(shadowShaderId, "first_frame");
 	prevFrameLocation = glGetUniformLocation(shadowShaderId, "pervFrame"); // Get the location of our projection matrix in the shader
 	renderWidthLocation = glGetUniformLocation(shadowShaderId, "RENDER_WIDTH"); // Get the location of our projection matrix in the shader
 	renderHeightLocation = glGetUniformLocation(shadowShaderId, "RENDER_HEIGHT"); // Get the location of our projection matrix in the shader
