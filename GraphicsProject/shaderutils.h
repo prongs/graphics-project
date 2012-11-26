@@ -19,6 +19,9 @@ glm::mat4 projectionMatrix; // Store the projection matrix
 glm::mat4 viewMatrix; // Store the view matrix
 glm::mat4 modelMatrix; // Store the model matrix
 
+glm::mat4 previousProjectionMatrix; // Store the projection matrix
+glm::mat4 previousViewMatrix; // Store the view matrix
+
 stack<glm::mat4> modelMatrixStack;
 
 
@@ -27,7 +30,12 @@ int projectionMatrixLocation;
 int viewMatrixLocation;
 int modelMatrixLocation;
 
+int previousProjectionMatrixLocation;
+int previousViewMatrixLocation;
 
+int prevFrameLocation;
+int renderWidthLocation;
+int renderHeightLocation;
 
 //Camera position
 float p_camera[3] = {32,20,0};
@@ -42,7 +50,7 @@ float p_light[3] = {3,20,0};
 float l_light[3] = {0,0,-1};
 
 GLuint fboId;
-
+GLuint textureId;                   // ID of texture(motion blur)/
 // Z values will be rendered to this texture when using fboId framebuffer
 GLuint depthTextureId;
 
@@ -160,16 +168,16 @@ GLhandleARB loadShader(char* filename, unsigned int type)
 	FILE *pfile;
 	GLhandleARB handle;
 	const GLcharARB* files[1];
-	
+
 	// shader Compilation variable
 	GLint result;				// Compilation code result
 	GLint errorLoglength ;
 	char* errorLogText;
 	GLsizei actualErrorLogLength;
-	
+
 	char buffer[400000];
 	memset(buffer,0,400000);
-	
+
 	// This will raise a warning on MS compiler
 	pfile = fopen(filename, "rb");
 	if(!pfile)
@@ -177,13 +185,13 @@ GLhandleARB loadShader(char* filename, unsigned int type)
 		printf("Sorry, can't open file: '%s'.\n", filename);
 		exit(0);
 	}
-	
+
 	fread(buffer,sizeof(char),400000,pfile);
 	//printf("%s\n",buffer);
-	
-	
+
+
 	fclose(pfile);
-	
+
 	handle = glCreateShaderObjectARB(type);
 	if (!handle)
 	{
@@ -191,41 +199,41 @@ GLhandleARB loadShader(char* filename, unsigned int type)
 		printf("Failed creating vertex shader object from file: %s.",filename);
 		exit(0);
 	}
-	
+
 	files[0] = (const GLcharARB*)buffer;
 	glShaderSourceARB(
-					  handle, //The handle to our shader
-					  1, //The number of files.
-					  files, //An array of const char * data, which represents the source code of theshaders
-					  NULL);
-	
+		handle, //The handle to our shader
+		1, //The number of files.
+		files, //An array of const char * data, which represents the source code of theshaders
+		NULL);
+
 	glCompileShaderARB(handle);
-	
+
 	//Compilation checking.
 	glGetObjectParameterivARB(handle, GL_OBJECT_COMPILE_STATUS_ARB, &result);
-	
+
 	// If an error was detected.
 	if (!result)
 	{
 		//We failed to compile.
 		printf("Shader '%s' failed compilation.\n",filename);
-		
+
 		//Attempt to get the length of our error log.
 		glGetObjectParameterivARB(handle, GL_OBJECT_INFO_LOG_LENGTH_ARB, &errorLoglength);
-		
+
 		//Create a buffer to read compilation error message
 		errorLogText = (char*)malloc(sizeof(char) * errorLoglength);
-		
+
 		//Used to get the final length of the log.
 		glGetInfoLogARB(handle, errorLoglength, &actualErrorLogLength, errorLogText);
-		
+
 		// Display errors.
 		printf("%s\n",errorLogText);
-		
+
 		// Free the buffer malloced earlier
 		free(errorLogText);
 	}
-	
+
 	return handle;
 }
 
@@ -235,23 +243,27 @@ void loadShadowShader()
 {
 	GLhandleARB vertexShaderHandle;
 	GLhandleARB fragmentShaderHandle;
-	
+
 	vertexShaderHandle   = loadShader("shadow.vert",GL_VERTEX_SHADER);
 	fragmentShaderHandle = loadShader("shadow.frag",GL_FRAGMENT_SHADER);
-	
+
 	shadowShaderId = glCreateProgramObjectARB();
-	
+
 	glAttachObjectARB(shadowShaderId,vertexShaderHandle);
 	glAttachObjectARB(shadowShaderId,fragmentShaderHandle);
 	glLinkProgramARB(shadowShaderId);
-	
+
 	shadowMapUniform = glGetUniformLocationARB(shadowShaderId,"ShadowMap");
-  shadowMapStepXUniform = glGetUniformLocationARB(shadowShaderId,"xPixelOffset");
+	shadowMapStepXUniform = glGetUniformLocationARB(shadowShaderId,"xPixelOffset");
 	shadowMapStepYUniform = glGetUniformLocationARB(shadowShaderId,"yPixelOffset");
 
 	projectionMatrixLocation = glGetUniformLocation(shadowShaderId, "projectionMatrix"); // Get the location of our projection matrix in the shader
 	viewMatrixLocation = glGetUniformLocation(shadowShaderId, "viewMatrix"); // Get the location of our view matrix in the shader
 	modelMatrixLocation = glGetUniformLocation(shadowShaderId, "modelMatrix"); // Get the location of our model matrix in the shader
+
+	previousProjectionMatrixLocation = glGetUniformLocation(shadowShaderId, "previousProjectionMatrix"); // Get the location of our projection matrix in the shader
+	previousViewMatrixLocation = glGetUniformLocation(shadowShaderId, "previousViewMatrix"); // Get the location of our view matrix in the shader
+
 
 }
 
@@ -259,50 +271,50 @@ void generateShadowFBO()
 {
 	int shadowMapWidth = RENDER_WIDTH * SHADOW_MAP_RATIO;
 	int shadowMapHeight = RENDER_HEIGHT * SHADOW_MAP_RATIO;
-	
+
 	//GLfloat borderColor[4] = {0,0,0,0};
-	
+
 	GLenum FBOstatus;
-	
+
 	// Try to use a texture depth component
 	glGenTextures(1, &depthTextureId);
 	glBindTexture(GL_TEXTURE_2D, depthTextureId);
-	
+
 	// GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	
+
 	// Remove artefact on the edges of the shadowmap
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-	
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
 	//glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor );
-	
-	
-	
+
+
+
 	// No need to force GL_DEPTH_COMPONENT24, drivers usually give you the max precision if available 
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	
+
 	// create a framebuffer object
 	glGenFramebuffersEXT(1, &fboId);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboId);
-	
+
 	// Instruct openGL that we won't bind a color texture with the currently binded FBO
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
-	
+
 	// attach the texture to FBO depth attachment point
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, depthTextureId, 0);
-	
+
 	// check FBO status
 	FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	if(FBOstatus != GL_FRAMEBUFFER_COMPLETE_EXT)
 		printf("GL_FRAMEBUFFER_COMPLETE_EXT failed, CANNOT use FBO\n");
-	
+
 	// switch back to window-system-provided framebuffer
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
@@ -319,7 +331,7 @@ void setupMatrices(float position_x,float position_y,float position_z,float look
 	glLoadIdentity();
 	gluLookAt(position_x,position_y,position_z,lookAt_x,lookAt_y,lookAt_z,0,1,0);
 	if(!light)
-	viewMatrix = glm::lookAt(glm::vec3(position_x, position_y, position_z), glm::vec3(lookAt_x,lookAt_y,lookAt_z), glm::vec3(0.0f,1.0f,0.0f));
+		viewMatrix = glm::lookAt(glm::vec3(position_x, position_y, position_z), glm::vec3(lookAt_x,lookAt_y,lookAt_z), glm::vec3(0.0f,1.0f,0.0f));
 }
 
 
@@ -329,7 +341,7 @@ void setTextureMatrix(void)
 {
 	static double modelView[16];
 	static double projection[16];
-	
+
 	// This is matrix transform every coordinate x,y,z
 	// x = x* 0.5 + 0.5 
 	// y = y* 0.5 + 0.5 
@@ -339,23 +351,23 @@ void setTextureMatrix(void)
 		0.5, 0.0, 0.0, 0.0, 
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
-	0.5, 0.5, 0.5, 1.0};
-	
+		0.5, 0.5, 0.5, 1.0};
+
 	// Grab modelview and transformation matrices
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-	
-	
+
+
 	glMatrixMode(GL_TEXTURE);
 	glActiveTextureARB(GL_TEXTURE7);
-	
+
 	glLoadIdentity();	
 	glLoadMatrixd(bias);
-	
+
 	// concatating all matrice into one.
 	glMultMatrixd (projection);
 	glMultMatrixd (modelView);
-	
+
 	// Go back to normal matrix mode
 	glMatrixMode(GL_MODELVIEW);
 }
@@ -375,7 +387,7 @@ void startTranslate(float x,float y,float z)
 	glPushMatrix();
 	glTranslatef(x,y,z);
 
-  glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void startRotate(float angle, float x,float y,float z)
@@ -385,13 +397,13 @@ void startRotate(float angle, float x,float y,float z)
 	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
 	glPushMatrix();
 	glRotatef(angle, x,y,z);
-	
+
 	glMatrixMode(GL_TEXTURE);
 	glActiveTextureARB(GL_TEXTURE7);
 	glPushMatrix();
 	glRotatef(angle, x,y,z);
 
-  glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void startScale(float sx, float sy, float sz)
@@ -401,13 +413,13 @@ void startScale(float sx, float sy, float sz)
 	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
 	glPushMatrix();
 	glScalef(sx, sy, sz);
-	
+
 	glMatrixMode(GL_TEXTURE);
 	glActiveTextureARB(GL_TEXTURE7);
 	glPushMatrix();
-  glScalef(sx, sy, sz);
+	glScalef(sx, sy, sz);
 
-  glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void endTransformation(void)
@@ -434,4 +446,34 @@ void endTransformation(void)
 //}
 //
 
+void motionBlurInit()
+{
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap generation included in OpenGL v1.4
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, RENDER_WIDTH, RENDER_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	prevFrameLocation = glGetUniformLocation(shadowShaderId, "pervFrame"); // Get the location of our projection matrix in the shader
+	renderWidthLocation = glGetUniformLocation(shadowShaderId, "RENDER_WIDTH"); // Get the location of our projection matrix in the shader
+	renderHeightLocation = glGetUniformLocation(shadowShaderId, "RENDER_HEIGHT"); // Get the location of our projection matrix in the shader
+}
+
+void copyFrameBufferToTexture()
+{
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+}
+
 #endif
+
+
