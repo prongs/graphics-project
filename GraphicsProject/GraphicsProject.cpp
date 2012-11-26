@@ -362,7 +362,7 @@ int main(int argc, char** argv)
 
 	glutKeyboardFunc(processNormalKeys);
 	loadModels();
-  loadSkybox();
+  //loadSkybox();
   draw_time = omp_get_wtime();
 	glutMainLoop();
 }
