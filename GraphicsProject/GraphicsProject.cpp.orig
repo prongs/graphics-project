@@ -129,10 +129,6 @@ void renderScene(void)
 	previousProjectionMatrix = glm::mat4(projectionMatrix);
 	previousViewMatrix = glm::mat4(viewMatrix);
 
-	glUniform1i(textureId, 0);
-	glUniform1i(renderWidthLocation, RENDER_WIDTH);
-	glUniform1i(renderHeightLocation, RENDER_HEIGHT);
-
 
 	glUniform1iARB(shadowMapUniform,7);
   glUniform1fARB(shadowMapStepXUniform,1.0/ (RENDER_WIDTH * SHADOW_MAP_RATIO));
@@ -177,13 +173,13 @@ void renderScene(void)
 	//glEnd();
 	//glDisable(GL_TEXTURE_2D);
 	//
-	copyFrameBufferToTexture();
+
 	glutSwapBuffers();
   double draw_time2 = omp_get_wtime();
   double diff = draw_time2-draw_time;
   double fps = 1.0/diff;
   draw_time = draw_time2;
-  //cout<<fps<<endl;
+  cout<<fps<<endl;
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
@@ -228,14 +224,17 @@ int main(int argc, char** argv)
 	glLightfv(GL_LIGHT0, GL_SPECULAR, s);
 	glLightfv(GL_LIGHT0, GL_POSITION, p_light);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
-	
-	motionBlurInit();
 
 	glutDisplayFunc(renderScene);
 	glutIdleFunc(renderScene);
 
 	glutKeyboardFunc(processNormalKeys);
+<<<<<<< HEAD
 	loadModels();
+
+=======
+  loadModels();
   draw_time = omp_get_wtime();
+>>>>>>> 7d7ed51a16027b819675752e40fc3b0bd125ee0f
 	glutMainLoop();
 }
