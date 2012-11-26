@@ -198,6 +198,18 @@ void processNormalKeys(unsigned char key, int x, int y) {
 			debug(p_light[0],p_light[1],p_light[2]);
 		whether_update=!whether_update;
 		break;
+	case 'w':
+		p_camera[0]-=1.0;
+		break;
+	case 's':
+		p_camera[0]+=1.0;
+		break;
+	case 'a':
+		p_camera[2]-=1.0;
+		break;
+	case 'd':
+		p_camera[2]+=1.0;
+		break;
 	}
 }
 
