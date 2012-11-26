@@ -179,6 +179,12 @@ void drawCar(void)
 	glEnd();
 }
 
+void displayCaller(int a)
+{
+  glutPostRedisplay();
+  glutTimerFunc(30, displayCaller, 0);
+}
+
 void renderScene(void) 
 {
 
@@ -417,8 +423,9 @@ int main(int argc, char** argv)
 
 	//motionBlurInit();
 
+  glutTimerFunc(30, displayCaller, 0);
 	glutDisplayFunc(renderScene);
-	glutIdleFunc(renderScene);
+	//glutIdleFunc(renderScene);
 
 	glutKeyboardFunc(processNormalKeys);
 	loadModels();
