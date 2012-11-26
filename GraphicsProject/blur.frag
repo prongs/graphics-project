@@ -13,15 +13,19 @@ void main()
 
 	int numSamples = 9;
 	vec4 prevPos = previousProjectionMatrix * previousViewMatrix * pos;
+	if(prevPos.s<0&&prevPos.t<0)
+	{
+		gl_FragColor = vec4(1,1,0,1);
+	}
 	prevPos = prevPos/prevPos.w;
-	int prevPos_x = int((prevPos.s+1)*RENDER_WIDTH/2.0);
-	int prevPos_y = int((prevPos.t+1)*RENDER_HEIGHT/2.0);
+	float prevPos_x = ((prevPos.s+1.0)/2.0);
+	float prevPos_y = ((prevPos.t+1.0)/2.0);
 
-	float x = prevPos_x/RENDER_WIDTH;
-	float y = prevPos_y/RENDER_HEIGHT;
 	
+	vec2 prev = vec2(prevPos_x,prevPos_y);	
 	vec2 samplePos = vec2(gl_FragCoord.s/RENDER_WIDTH,gl_FragCoord.t/RENDER_HEIGHT);
-	vec2 velocity = (vec2(x,y)-samplePos)/220.0;
+	vec2 samplePos_first = vec2(gl_FragCoord.s/RENDER_WIDTH,gl_FragCoord.t/RENDER_HEIGHT);
+	vec2 velocity = (prev-samplePos)/5.0;
 	vec4 blurColor = vec4(0,0,0,0);
 	for(int i = 0; i<numSamples; i++,samplePos+=velocity)
 	{
