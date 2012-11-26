@@ -111,7 +111,7 @@ void DisableReflectionMap()
 // This update only change the position of the light.
 //int elapsedTimeCounter = 0;
 bool whether_update=true;
-int first_frame = 02;
+int first_frame = 10002;
 void update(void)
 {
 
@@ -239,9 +239,11 @@ void renderScene(void)
 	previousViewMatrix = glm::mat4(viewMatrix);
 
 
-	glBindTexture(GL_TEXTURE_2D,textureId);
+
+	//glActiveTexture(GL_TEXTURE1);
+	//glBindTexture(GL_TEXTURE_2D,textureId);
 	glUniform1i(firstFrameBoolLoc, first_frame);
-	glUniform1i(textureId, 0);
+	glUniform1i(textureId, 1);
 	glUniform1i(renderWidthLocation, RENDER_WIDTH);
 	glUniform1i(renderHeightLocation, RENDER_HEIGHT);
 

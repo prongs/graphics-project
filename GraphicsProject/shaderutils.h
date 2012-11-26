@@ -471,6 +471,7 @@ void motionBlurInit()
 
 void copyFrameBufferToTexture()
 {
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textureId);
 	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, RENDER_WIDTH, RENDER_HEIGHT);
 	glBindTexture(GL_TEXTURE_2D, 0);
