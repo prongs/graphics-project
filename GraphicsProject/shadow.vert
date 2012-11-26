@@ -11,15 +11,15 @@ varying vec4 ShadowCoord;
 varying vec3 normal;
 varying vec3 vert_to_light;
 varying vec3 eyeVector;
-
+varying vec4 pos;
 
 void main()
 {
 
 
      	ShadowCoord= gl_TextureMatrix[7] * gl_Vertex;
-  
-		gl_Position = projectionMatrix * viewMatrix * modelMatrix * gl_Vertex;
+		pos = modelMatrix * gl_Vertex;
+		gl_Position = projectionMatrix * viewMatrix * pos;
 
 		normal = gl_NormalMatrix * gl_Normal;
 

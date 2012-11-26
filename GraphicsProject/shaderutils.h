@@ -19,6 +19,9 @@ glm::mat4 projectionMatrix; // Store the projection matrix
 glm::mat4 viewMatrix; // Store the view matrix
 glm::mat4 modelMatrix; // Store the model matrix
 
+glm::mat4 previousProjectionMatrix; // Store the projection matrix
+glm::mat4 previousViewMatrix; // Store the view matrix
+
 stack<glm::mat4> modelMatrixStack;
 
 
@@ -27,7 +30,8 @@ int projectionMatrixLocation;
 int viewMatrixLocation;
 int modelMatrixLocation;
 
-
+int previousProjectionMatrixLocation;
+int previousViewMatrixLocation;
 
 //Camera position
 float p_camera[3] = {32,20,0};
@@ -248,6 +252,10 @@ void loadShadowShader()
 	projectionMatrixLocation = glGetUniformLocation(shadowShaderId, "projectionMatrix"); // Get the location of our projection matrix in the shader
 	viewMatrixLocation = glGetUniformLocation(shadowShaderId, "viewMatrix"); // Get the location of our view matrix in the shader
 	modelMatrixLocation = glGetUniformLocation(shadowShaderId, "modelMatrix"); // Get the location of our model matrix in the shader
+	
+	previousProjectionMatrixLocation = glGetUniformLocation(shadowShaderId, "previousProjectionMatrix"); // Get the location of our projection matrix in the shader
+	previousViewMatrixLocation = glGetUniformLocation(shadowShaderId, "previousViewMatrix"); // Get the location of our view matrix in the shader
+	
 
 }
 
@@ -428,3 +436,5 @@ void endTransformation(void)
 //
 
 #endif
+
+

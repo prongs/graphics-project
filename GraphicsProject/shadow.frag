@@ -1,12 +1,28 @@
 uniform sampler2D ShadowMap;
 
+uniform mat4 previousProjectionMatrix;
+uniform mat4 previousViewMatrix;
+
 varying vec4 ShadowCoord;
 varying vec3 normal;
 varying vec3 vert_to_light;
 varying vec3 eyeVector;
-
+varying vec4 pos;
 void main()
 {	
+
+	int numSamples = 4;
+	vec4 prevPos = previousProjectionMatrix * previousViewMatrix * pos;
+	prevPos = prevPos/prevPos.w;
+	
+
+	/* The following is how debugging is done in shaders
+	if(prevPos.s <= -0.0f && prevPos.t<=0.0f)
+		{
+			gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+			return;
+		}
+	*/
 	vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
 	
 	// Used to lower moiré pattern and self-shadowing
