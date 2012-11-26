@@ -195,6 +195,7 @@ void renderScene(void)
 	//drawCar();
 
 	setTextureMatrix();
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 	glActiveTexture(GL_TEXTURE6);
 
@@ -295,6 +296,7 @@ void renderScene(void)
 	//glDisable(GL_TEXTURE_2D);
 	//
 	//copyFrameBufferToTexture();
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glutSwapBuffers();
   double draw_time2 = omp_get_wtime();
   double diff = draw_time2-draw_time;
