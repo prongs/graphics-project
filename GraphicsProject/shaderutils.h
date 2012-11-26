@@ -26,9 +26,14 @@ stack<glm::mat4> modelMatrixStack;
 
 
 
+
 int projectionMatrixLocation;
 int viewMatrixLocation;
 int modelMatrixLocation;
+
+int blurProjectionMatrixLocation;
+int blurViewMatrixLocation;
+int blurModelMatrixLocation;
 
 int previousProjectionMatrixLocation;
 int previousViewMatrixLocation;
@@ -36,6 +41,7 @@ int previousViewMatrixLocation;
 
 
 int firstFrameBoolLoc;
+int frameBufferLoc;
 int prevFrameLocation;
 int renderWidthLocation;
 int renderHeightLocation;
@@ -62,6 +68,7 @@ GLuint depthrenderbuffer;
 
 // Use to activate/disable shadowShader
 GLhandleARB shadowShaderId;
+GLhandleARB blurShaderId;
 GLuint shadowMapUniform;
 GLuint shadowMapStepXUniform;
 GLuint shadowMapStepYUniform;
@@ -245,30 +252,50 @@ GLhandleARB loadShader(char* filename, unsigned int type)
 
 
 
-void loadShadowShader()
+void loadAllShaders()
 {
   GLhandleARB vertexShaderHandle;
   GLhandleARB fragmentShaderHandle;
+  GLhandleARB blurVertexShaderHandle;
+  GLhandleARB blurFragmentShaderHandle;
 
   vertexShaderHandle   = loadShader("shadow.vert",GL_VERTEX_SHADER);
   fragmentShaderHandle = loadShader("shadow.frag",GL_FRAGMENT_SHADER);
 
+
+  blurVertexShaderHandle   = loadShader("blur.vert",GL_VERTEX_SHADER);
+  blurFragmentShaderHandle = loadShader("blur.frag",GL_FRAGMENT_SHADER);
+
   shadowShaderId = glCreateProgramObjectARB();
+  blurShaderId = glCreateProgramObjectARB();
 
   glAttachObjectARB(shadowShaderId,vertexShaderHandle);
   glAttachObjectARB(shadowShaderId,fragmentShaderHandle);
   glLinkProgramARB(shadowShaderId);
 
+  glAttachObjectARB(blurShaderId,blurVertexShaderHandle);
+  glAttachObjectARB(blurShaderId,blurFragmentShaderHandle);
+  glLinkProgramARB(blurShaderId);
+
+
   shadowMapUniform = glGetUniformLocationARB(shadowShaderId,"ShadowMap");
   shadowMapStepXUniform = glGetUniformLocationARB(shadowShaderId,"xPixelOffset");
   shadowMapStepYUniform = glGetUniformLocationARB(shadowShaderId,"yPixelOffset");
 
-  projectionMatrixLocation = glGetUniformLocation(shadowShaderId, "projectionMatrix"); // Get the location of our projection matrix in the shader
-  viewMatrixLocation = glGetUniformLocation(shadowShaderId, "viewMatrix"); // Get the location of our view matrix in the shader
-  modelMatrixLocation = glGetUniformLocation(shadowShaderId, "modelMatrix"); // Get the location of our model matrix in the shader
+  projectionMatrixLocation = glGetUniformLocation(shadowShaderId, "projectionMatrix"); 
+  viewMatrixLocation = glGetUniformLocation(shadowShaderId, "viewMatrix"); 
+  modelMatrixLocation = glGetUniformLocation(shadowShaderId, "modelMatrix");
 
-  previousProjectionMatrixLocation = glGetUniformLocation(shadowShaderId, "previousProjectionMatrix"); // Get the location of our projection matrix in the shader
-  previousViewMatrixLocation = glGetUniformLocation(shadowShaderId, "previousViewMatrix"); // Get the location of our view matrix in the shader
+  blurProjectionMatrixLocation = glGetUniformLocation(blurShaderId, "projectionMatrix"); 
+  blurViewMatrixLocation = glGetUniformLocation(blurShaderId, "viewMatrix"); 
+  blurModelMatrixLocation = glGetUniformLocation(blurShaderId, "modelMatrix");
+
+  previousProjectionMatrixLocation = glGetUniformLocation(blurShaderId, "previousProjectionMatrix"); 
+  previousViewMatrixLocation = glGetUniformLocation(blurShaderId, "previousViewMatrix"); 
+  renderWidthLocation = glGetUniformLocation(blurShaderId, "RENDER_WIDTH"); 
+  renderHeightLocation = glGetUniformLocation(blurShaderId, "RENDER_HEIGHT"); 
+  firstFrameBoolLoc = glGetUniformLocation(blurShaderId, "first_frame"); 
+  frameBufferLoc = glGetUniformLocation(blurShaderId, "frameBuf"); 
 
 
 }
@@ -427,6 +454,7 @@ void startTranslate(float x,float y,float z)
   modelMatrixStack.push(modelMatrix);
   modelMatrix = glm::translate(modelMatrix, glm::vec3(x,y,z));
   glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+  glUniformMatrix4fv(blurModelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
   glPushMatrix();
   glTranslatef(x,y,z);
   glMatrixMode(GL_TEXTURE);
@@ -442,6 +470,7 @@ void startRotate(float angle, float x,float y,float z)
   modelMatrixStack.push(modelMatrix);
   modelMatrix = glm::rotate(modelMatrix,angle, glm::vec3(x,y,z));
   glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+  glUniformMatrix4fv(blurModelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
   glPushMatrix();
   glRotatef(angle, x,y,z);
 
@@ -458,6 +487,7 @@ void startScale(float sx, float sy, float sz)
   modelMatrixStack.push(modelMatrix);
   modelMatrix = glm::scale(modelMatrix, glm::vec3(sx,sy,sz));
   glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+  glUniformMatrix4fv(blurModelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
   glPushMatrix();
   glScalef(sx, sy, sz);
 
@@ -479,6 +509,7 @@ void endTransformation(void)
   glPopMatrix();
   modelMatrix = modelMatrixStack.top();
   glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+  glUniformMatrix4fv(blurModelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
   modelMatrixStack.pop();
 }
 

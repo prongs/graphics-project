@@ -111,6 +111,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="blur.frag" />
+    <None Include="blur.vert" />
     <None Include="shadow.frag" />
     <None Include="shadow.vert" />
   </ItemGroup>

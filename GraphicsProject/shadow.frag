@@ -1,15 +1,9 @@
 uniform sampler2DShadow ShadowMap;
-uniform mat4 previousProjectionMatrix;
-uniform mat4 previousViewMatrix;
-uniform int RENDER_WIDTH;
-uniform int RENDER_HEIGHT;
-uniform bool first_frame;
 
 varying vec4 ShadowCoord;
 varying vec3 normal;
 varying vec3 vert_to_light;
 varying vec3 eyeVector;
-varying vec4 pos;
 
 uniform float xPixelOffset ;
 uniform float yPixelOffset ;
@@ -22,44 +16,7 @@ float lookup( vec2 offSet)
 void main()
 {	
 
-	int numSamples = 2;
-	vec4 prevPos = previousProjectionMatrix * previousViewMatrix * pos;
-	prevPos = prevPos/prevPos.w;
-	int prevPos_x = int((prevPos.s+1)*RENDER_WIDTH/2.0);
-	int prevPos_y = int((prevPos.t+1)*RENDER_HEIGHT/2.0);
-	
-	vec2 velocity = vec2(prevPos_x-gl_FragCoord.x, prevPos_y-gl_FragCoord.y)/2.0;
-	velocity = vec2(0.00001,0.0001);
-	vec2 samplePos = gl_FragCoord.st+velocity;
-	vec4 blurColor = vec4(0,0,0,0);
-	if(blurColor.x==0)
-	{
-		gl_FragColor = vec4(1,0,0,1);
-		//return;
-	}
-/*
-	if(prevPos_y<100.0)
-		{
-			gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-			return;
-		}
-
-*/
-	vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
-	
-	// Used to lower moiré pattern and self-shadowing
-//	shadowCoordinateWdivide.z += 0.0005;
-	
-	
-//	float distanceFromLight = texture2D(ShadowMap,shadowCoordinateWdivide.st).z;
-	
-	
- //	float shadow = 1.0;
- //	if (ShadowCoord.w > 0.0)
- //		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
-
 	float shadow;
-		
 	// Avoid counter shadow
 	if (ShadowCoord.w > 1.0)
 	{
@@ -89,8 +46,7 @@ void main()
 	
   	vec4 col =	 (ambient_col + diffuse_col*diffuse_term + specular_col*pow(specular_term, gl_FrontMaterial.shininess) * shadow);
 	
-	vec4 curColor =	 vec4(vec3(col)*(shadow + 0.2),1.0);
+	gl_FragColor =	 vec4(vec3(col)*(shadow + 0.2),1.0);
 
-	gl_FragColor = (first_frame)?curColor:(blurColor + curColor)/numSamples;
 }
 

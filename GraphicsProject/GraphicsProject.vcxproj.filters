@@ -55,5 +55,11 @@
     <None Include="shadow.frag">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="blur.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="blur.vert">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
