@@ -1,6 +1,7 @@
 // GraphicsProject.cpp : Defines the entry point for the console application.
 //
 
+#include "BitmapTexture.h"
 #include "stdafx.h"
 #include "utils.h"
 #include "Model.h"
@@ -21,6 +22,9 @@ using namespace std;
 //Light mouvement circle radius
 float light_mvnt = 30.0f;
 
+GLuint skybox[6];
+Image* skybox_images[6];
+
 double draw_time;
 Model *car, *track;
 void loadModels()
@@ -29,6 +33,80 @@ void loadModels()
   //track=new Model("models/track/track_simple.3ds");
 }
 
+void loadSkybox()
+{
+  skybox_images[0] = (Image*)malloc(sizeof(Image));
+  skybox_images[1] = (Image*)malloc(sizeof(Image));
+  skybox_images[2] = (Image*)malloc(sizeof(Image));
+  skybox_images[3] = (Image*)malloc(sizeof(Image));
+  skybox_images[4] = (Image*)malloc(sizeof(Image));
+  skybox_images[5] = (Image*)malloc(sizeof(Image));
+
+  if (ImageLoad("checkered_back.bmp", skybox_images[0]) != 1)
+    exit(0);
+  if (ImageLoad("checkered_back.bmp", skybox_images[1]) != 1)
+    exit(0);
+  if (ImageLoad("checkered_back.bmp", skybox_images[2]) != 1)
+    exit(0);
+  if (ImageLoad("checkered_back.bmp", skybox_images[3]) != 1)
+    exit(0);
+  if (ImageLoad("checkered_back.bmp", skybox_images[4]) != 1)
+    exit(0);
+  if (ImageLoad("checkered_back.bmp", skybox_images[5]) != 1)
+    exit(0);
+
+  glGenTextures(6, &skybox[0]);
+  glBindTexture(GL_TEXTURE_2D, skybox[0]);
+
+  //glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, skybox[0]);
+  //glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, skybox[1]);
+  //glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, skybox[2]);
+  //glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, skybox[3]);
+  //glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, skybox[4]);
+  //glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, skybox[5]);
+
+  //glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, 3, skybox_images[0]->sizeX, skybox_images[0]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[0]->data);
+  //glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, 3, skybox_images[1]->sizeX, skybox_images[1]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[1]->data);
+  //glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, 3, skybox_images[2]->sizeX, skybox_images[2]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[2]->data);
+  //glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, 3, skybox_images[3]->sizeX, skybox_images[3]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[3]->data);
+  //glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, 3, skybox_images[4]->sizeX, skybox_images[4]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[4]->data);
+  //glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, 3, skybox_images[5]->sizeX, skybox_images[5]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[5]->data);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, skybox_images[5]->sizeX, skybox_images[5]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[5]->data);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  //glEnable(GL_TEXTURE_CUBE_MAP);
+}
+
+void bindCubeTextures()
+{
+  glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, skybox[0]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, skybox[1]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, skybox[2]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, skybox[3]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, skybox[4]);
+  glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, skybox[5]);
+}
+
+void EnableReflectionMap()
+{
+  glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+  glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+  glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+
+  glEnable(GL_TEXTURE_GEN_S);
+  glEnable(GL_TEXTURE_GEN_T);
+  glEnable(GL_TEXTURE_GEN_R);
+}
+
+void DisableReflectionMap()
+{
+  glDisable(GL_TEXTURE_GEN_S);
+  glDisable(GL_TEXTURE_GEN_T);
+  glDisable(GL_TEXTURE_GEN_R);
+}
 
 // This update only change the position of the light.
 //int elapsedTimeCounter = 0;
@@ -50,7 +128,7 @@ void drawObjects(void)
 	
 	glColor4f(0.9f,0.9f,0.9f,1);
 	
-	startTranslate(0,4,-16);
+	startTranslate(0,6,-16);
 	glutSolidCube(4);
 	endTransformation();
 	(modelMatrix, viewMatrix, projectionMatrix);
@@ -123,6 +201,36 @@ void renderScene(void)
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); 
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
+
+  //bindCubeTextures();
+  //glEnable(GL_TEXTURE_CUBE_MAP);
+  //startTranslate(0, 6,-16);
+  //EnableReflectionMap();
+  //glutSolidCube(4);
+  //endTransformation();
+  //DisableReflectionMap();
+  //glDisable(GL_TEXTURE_CUBE_MAP);
+
+  //glMatrixMode(GL_PROJECTION);
+  //glLoadIdentity();
+  //gluPerspective(45.0, RENDER_WIDTH/RENDER_HEIGHT, 1.0, 1000.0);
+  //glMatrixMode(GL_MODELVIEW);
+  //glLoadIdentity();
+  //gluLookAt(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0);
+  //glEnable(GL_TEXTURE_2D);
+  //glBindTexture(GL_TEXTURE_2D, skybox[0]);
+  //glBegin(GL_QUADS);
+  //glTexCoord2f(0.0, 0.0);
+  //glVertex3f(10.0, 0.0, -56.0);
+  //glTexCoord2f(1.0, 0.0);
+  //glVertex3f(20.0, 0.0, -56.0);
+  //glTexCoord2f(1.0, 1.0);
+  //glVertex3f(20.0, 5.0, -56.0);
+  //glTexCoord2f(0.0, 1.0);
+  //glVertex3f(10.0, 5.0, -56.0);
+  //glEnd();
+
 
 	glUseProgramObjectARB(shadowShaderId);
 	glUniform1iARB(shadowMapUniform,7);
@@ -207,6 +315,7 @@ int main(int argc, char** argv)
 	glClearColor(0,0,0,1.0f);
 	
 	glEnable(GL_CULL_FACE);
+  glEnable(GL_TEXTURE_2D);
 	
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
@@ -224,6 +333,7 @@ int main(int argc, char** argv)
 	
 	glutKeyboardFunc(processNormalKeys);
   loadModels();
+  loadSkybox();
   draw_time = omp_get_wtime();
 	glutMainLoop();
 }
