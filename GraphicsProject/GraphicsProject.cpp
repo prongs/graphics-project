@@ -177,6 +177,7 @@ void renderScene(void)
 
 	if(whether_update) update();
 
+	glActiveTexture(GL_TEXTURE7);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);
 	glUseProgramObjectARB(0);
 
@@ -195,7 +196,9 @@ void renderScene(void)
 
 	setTextureMatrix();
 
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+	glActiveTexture(GL_TEXTURE6);
+
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,blurFboId);
 
 	glViewport(0,0,RENDER_WIDTH,RENDER_HEIGHT);
 
@@ -249,7 +252,7 @@ void renderScene(void)
 
 
 	glUniform1iARB(shadowMapUniform,7);
-  glUniform1fARB(shadowMapStepXUniform,1.0/ (RENDER_WIDTH * SHADOW_MAP_RATIO));
+	glUniform1fARB(shadowMapStepXUniform,1.0/ (RENDER_WIDTH * SHADOW_MAP_RATIO));
 	glUniform1fARB(shadowMapStepYUniform,1.0/ (RENDER_HEIGHT * SHADOW_MAP_RATIO));
 
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]); // Send our projection matrix to the shader
@@ -259,7 +262,7 @@ void renderScene(void)
 	glUniformMatrix4fv(previousProjectionMatrixLocation, 1, GL_FALSE, &previousProjectionMatrix[0][0]); // Send our projection matrix to the shader
 	glUniformMatrix4fv(previousViewMatrixLocation, 1, GL_FALSE, &previousViewMatrix[0][0]); // Send our view matrix to the shader
 
-	glActiveTextureARB(GL_TEXTURE7);
+	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D,depthTextureId);
 
 	setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
@@ -291,7 +294,7 @@ void renderScene(void)
 	//glEnd();
 	//glDisable(GL_TEXTURE_2D);
 	//
-	copyFrameBufferToTexture();
+	//copyFrameBufferToTexture();
 	glutSwapBuffers();
   double draw_time2 = omp_get_wtime();
   double diff = draw_time2-draw_time;
@@ -338,13 +341,14 @@ int main(int argc, char** argv)
 	glutCreateWindow("GLSL Shadow mapping");
 	glewInit();
 	generateShadowFBO();
+	setupBlurFBO();
 	loadShadowShader();
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0,0,0,1.0f);
 
 	glEnable(GL_CULL_FACE);
-  glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
@@ -357,7 +361,7 @@ int main(int argc, char** argv)
 	glLightfv(GL_LIGHT0, GL_POSITION, p_light);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 	
-	motionBlurInit();
+	//motionBlurInit();
 
 	glutDisplayFunc(renderScene);
 	glutIdleFunc(renderScene);

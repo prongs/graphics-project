@@ -1,5 +1,4 @@
 uniform sampler2DShadow ShadowMap;
-uniform sampler2D pervFrame;
 uniform mat4 previousProjectionMatrix;
 uniform mat4 previousViewMatrix;
 uniform int RENDER_WIDTH;
@@ -33,10 +32,6 @@ void main()
 	velocity = vec2(0.00001,0.0001);
 	vec2 samplePos = gl_FragCoord.st+velocity;
 	vec4 blurColor = vec4(0,0,0,0);
-	for(int i = 0; i < numSamples-1; i++, samplePos+=velocity)
-	{
-		blurColor += texture(pervFrame, samplePos);
-	}
 	if(blurColor.x==0)
 	{
 		gl_FragColor = vec4(1,0,0,1);
@@ -97,6 +92,5 @@ void main()
 	vec4 curColor =	 vec4(vec3(col)*(shadow + 0.2),1.0);
 
 	gl_FragColor = (first_frame)?curColor:(blurColor + curColor)/numSamples;
-	//gl_FragColor = texture2D(pervFrame, vec2(prevPos_x, prevPos_y));
 }
 

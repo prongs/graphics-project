@@ -53,9 +53,11 @@ float p_light[3] = {3,20,0};
 float l_light[3] = {0,0,-1};
 
 GLuint fboId;
+GLuint blurFboId;
 GLuint textureId;                   // ID of texture(motion blur)/
 // Z values will be rendered to this texture when using fboId framebuffer
 GLuint depthTextureId;
+GLuint blurTextureId;
 
 // Use to activate/disable shadowShader
 GLhandleARB shadowShaderId;
@@ -280,6 +282,7 @@ void generateShadowFBO()
 	GLenum FBOstatus;
 
 	// Try to use a texture depth component
+	glActiveTexture(GL_TEXTURE7);
 	glGenTextures(1, &depthTextureId);
 	glBindTexture(GL_TEXTURE_2D, depthTextureId);
 
@@ -319,6 +322,40 @@ void generateShadowFBO()
 		printf("GL_FRAMEBUFFER_COMPLETE_EXT failed, CANNOT use FBO\n");
 
 	// switch back to window-system-provided framebuffer
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+
+void setupBlurFBO()
+{
+
+	glActiveTexture(GL_TEXTURE6);
+	glGenTextures(1, &blurTextureId);
+	glBindTexture(GL_TEXTURE_2D, blurTextureId);
+
+	// GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// Remove artefact on the edges of the shadowmap
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+	//glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor );
+
+
+
+	// No need to force GL_DEPTH_COMPONENT24, drivers usually give you the max precision if available 
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, RENDER_WIDTH, RENDER_HEIGHT, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenFramebuffersEXT(1, &blurFboId);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, blurFboId);
+
+	// attach the texture to FBO depth attachment point
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,GL_TEXTURE_2D, blurTextureId, 0);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
@@ -449,34 +486,8 @@ void endTransformation(void)
 //}
 //
 
-void motionBlurInit()
-{
-	glGenTextures(1, &textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap generation included in OpenGL v1.4
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, RENDER_WIDTH, RENDER_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	firstFrameBoolLoc = glGetUniformLocation(shadowShaderId, "first_frame");
-	prevFrameLocation = glGetUniformLocation(shadowShaderId, "pervFrame"); // Get the location of our projection matrix in the shader
-	renderWidthLocation = glGetUniformLocation(shadowShaderId, "RENDER_WIDTH"); // Get the location of our projection matrix in the shader
-	renderHeightLocation = glGetUniformLocation(shadowShaderId, "RENDER_HEIGHT"); // Get the location of our projection matrix in the shader
-}
 
-void copyFrameBufferToTexture()
-{
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, RENDER_WIDTH, RENDER_HEIGHT);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
-}
 
 #endif
 
