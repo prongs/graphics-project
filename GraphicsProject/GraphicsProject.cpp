@@ -403,6 +403,12 @@ void processNormalKeys(unsigned char key, int x, int y) {
 			vel_2 = vel_clamp;
 		p_camera[2]+=vel_2;
 		break;
+	case 'z':
+		p_camera[1]+=0.1;
+		break;
+	case 'x':
+		p_camera[1]-=0.1;
+		break;
 	case ' ':
 		accel_0 = accel_2 = vel_0 = vel_2 = 0;
 	}
