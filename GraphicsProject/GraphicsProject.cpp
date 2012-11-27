@@ -53,19 +53,31 @@ void loadSkybox()
 	skybox_images[4] = (Image*)malloc(sizeof(Image));
 	skybox_images[5] = (Image*)malloc(sizeof(Image));
 
-	if (ImageLoad("skybox_0.bmp", skybox_images[0]) != 1)
+	//if (ImageLoad("skybox_4.bmp", skybox_images[0]) != 1)
+	//	exit(0);
+	//if (ImageLoad("skybox_5.bmp", skybox_images[1]) != 1)
+	//	exit(0);
+	//if (ImageLoad("skybox_3.bmp", skybox_images[2]) != 1)
+	//	exit(0);
+	//if (ImageLoad("skybox_2.bmp", skybox_images[3]) != 1)
+	//	exit(0);
+	//if (ImageLoad("skybox_0.bmp", skybox_images[4]) != 1)
+	//	exit(0);
+	//if (ImageLoad("skybox_1.bmp", skybox_images[5]) != 1)
+	//	exit(0);
+
+	if (ImageLoad("skybox_4_r.bmp", skybox_images[0]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_1.bmp", skybox_images[1]) != 1)
+	if (ImageLoad("skybox_5_r.bmp", skybox_images[1]) != 1)
 		exit(0);
 	if (ImageLoad("skybox_2.bmp", skybox_images[2]) != 1)
 		exit(0);
 	if (ImageLoad("skybox_3.bmp", skybox_images[3]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_4.bmp", skybox_images[4]) != 1)
+	if (ImageLoad("skybox_0_r.bmp", skybox_images[4]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_5.bmp", skybox_images[5]) != 1)
+	if (ImageLoad("skybox_1_r.bmp", skybox_images[5]) != 1)
 		exit(0);
-
 	glGenTextures(6, &skybox[0]);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, skybox[0]);
@@ -153,12 +165,13 @@ void drawObjects(void)
 	startTranslate(0,6,-16);
 	glutSolidCube(4);
 	endTransformation();
+	startTranslate(8,6,-16);
+	glutSolidCube(2);
+	endTransformation();
 	(modelMatrix, viewMatrix, projectionMatrix);
 	startTranslate(10,4,-5);
 	glutSolidSphere(2, 128, 128);
 	endTransformation();
-
-	glMaterialf(GL_FRONT, GL_SHININESS, 30);
 
 	glColor4f(0.3f,0.3f,0.3f,1);
 	glBegin(GL_QUADS);
