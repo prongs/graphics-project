@@ -44,7 +44,7 @@ void main()
     gl_FragColor =	color;
     if(gl_FrontMaterial.shininess>=20)
 	{
-        vec3 reflectedDirection = normalize(reflect(E, N));
+        vec3 reflectedDirection = normalize(reflect(-E, N));
         //or -E?
     reflectedDirection.y = -reflectedDirection.y;
         vec4 cubeColor = textureCube(cubeMap, reflectedDirection);

@@ -150,6 +150,7 @@ void drawObjects(void)
 	glMaterialf(GL_FRONT, GL_SHININESS, 4.0);
 	glColor4f(0.9f,0.9f,0.9f,1);
 
+	glMaterialf(GL_FRONT, GL_SHININESS, 30);
 	startTranslate(0,6,-16);
 	glutSolidCube(4);
 	endTransformation();
