@@ -19,13 +19,13 @@ using namespace std;
 int numSamples = 1;
 bool showShadows  = 0;
 
-// Expressed as float so gluPerspective division returns a float and not 0 (640/480 != 640.0/480.0).
-
-//Light mouvement circle radius
 float light_mvnt = 30.0f;
 float accel_0 = 0, accel_2 = 0, vel_0 = 0, vel_2 = 0;
 float accel_clamp = 0.01, vel_clamp = 1.0;
 
+float camera_mvnt = 40.0f;
+bool move_camera = false;
+bool show_reflection = false;
 
 GLuint skybox[6];
 Image* skybox_images[6];
@@ -33,12 +33,10 @@ Image* skybox_images[6];
 double draw_time;
 Model *car, *track;
 
-
-
 void executeBlurPass();
 
-
-
+// Redundant, not used in the demonstration of the effects due to the
+// high polygon nature of the models
 void loadModels()
 {
 	//car=new Model("models/audi/audir8.3ds");
@@ -54,19 +52,6 @@ void loadSkybox()
 	skybox_images[3] = (Image*)malloc(sizeof(Image));
 	skybox_images[4] = (Image*)malloc(sizeof(Image));
 	skybox_images[5] = (Image*)malloc(sizeof(Image));
-
-	//if (ImageLoad("skybox_4.bmp", skybox_images[0]) != 1)
-	//	exit(0);
-	//if (ImageLoad("skybox_5.bmp", skybox_images[1]) != 1)
-	//	exit(0);
-	//if (ImageLoad("skybox_3.bmp", skybox_images[2]) != 1)
-	//	exit(0);
-	//if (ImageLoad("skybox_2.bmp", skybox_images[3]) != 1)
-	//	exit(0);
-	//if (ImageLoad("skybox_0.bmp", skybox_images[4]) != 1)
-	//	exit(0);
-	//if (ImageLoad("skybox_1.bmp", skybox_images[5]) != 1)
-	//	exit(0);
 
 	if (ImageLoad("s_right.bmp", skybox_images[0]) != 1)
 		exit(0);
@@ -136,8 +121,6 @@ void DisableReflectionMap()
 	glDisable(GL_TEXTURE_GEN_R);
 }
 
-// This update only change the position of the light.
-//int elapsedTimeCounter = 0;
 bool whether_update=true;
 int first_frame = 10002;
 void update(void)
@@ -147,9 +130,12 @@ void update(void)
 	p_light[2] = light_mvnt * sin(glutGet(GLUT_ELAPSED_TIME)/1000.0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, p_light);
+}
 
-	//p_light[0] = light_mvnt * cos(3652/1000.0);
-	//p_light[2] = light_mvnt * sin(3652/1000.0);
+void moveCamera(void)
+{
+	p_camera[0] = camera_mvnt * cos(glutGet(GLUT_ELAPSED_TIME)/3000.0);
+	p_camera[2] = camera_mvnt * sin(glutGet(GLUT_ELAPSED_TIME)/3000.0);
 }
 
 void drawObjects(void)
@@ -170,6 +156,7 @@ void drawObjects(void)
 	glutSolidCube(2);
 	endTransformation();
 	(modelMatrix, viewMatrix, projectionMatrix);
+  glMaterialf(GL_FRONT, GL_SHININESS, 30);
 	startTranslate(10,4,-5);
 	glutSolidSphere(2, 128, 128);
 	endTransformation();
@@ -182,92 +169,21 @@ void drawObjects(void)
 	glVertex3f( 15,2,-35);
 	glEnd();
 
-	glMaterialf(GL_FRONT, GL_SHININESS, 30);
-	startTranslate(20,14,-5);
-	glutSolidSphere(2, 128, 128);
-	endTransformation();
+  if (show_reflection) 
+  {
+    float a1[]={0.2, 0.2, 0.2, 1.0};
+    float d1[]={0.5, 0.5, 0.5, 1.0};
+    float s1[]={0.2, 0.2, 0.2, 1.0};
+    glMaterialfv(GL_FRONT, GL_AMBIENT, a1);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, d1);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, s1);
+    glMaterialf(GL_FRONT, GL_SHININESS, 30);
+    startTranslate(20,14,-5);
+    glutSolidSphere(2, 128, 128);
+    endTransformation();
+  }
 }
 
-void drawSkyBox()
-{
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDepthMask(GL_FALSE);
-	glPushAttrib(GL_ENABLE_BIT);
-    glEnable(GL_TEXTURE_2D);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_BLEND);
-	modelMatrixStack.push(modelMatrix);
-	modelMatrix = glm::mat4(1.0);
-	viewMatrix = glm::mat4(1.0);
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
-	//glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our model matrix to the shader
-	glUniform1i(textureLocation, 4);
-	glUniform1i(readFromTextureLocation,1);
-
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, skybox[0]);
-    glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex3f(  10.5, -10.5, -10.5 );
-        glTexCoord2f(1, 0); glVertex3f( -10.5, -10.5, -10.5 );
-        glTexCoord2f(1, 1); glVertex3f( -10.5,  10.5, -10.5 );
-        glTexCoord2f(0, 1); glVertex3f(  10.5,  10.5, -10.5 );
-    glEnd();
-	    // Render the left quad
-    glBindTexture(GL_TEXTURE_2D, skybox[1]);
-    glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex3f(  10.5, -10.5,  10.5 );
-        glTexCoord2f(1, 0); glVertex3f(  10.5, -10.5, -10.5 );
-        glTexCoord2f(1, 1); glVertex3f(  10.5,  10.5, -10.5 );
-        glTexCoord2f(0, 1); glVertex3f(  10.5,  10.5,  10.5 );
-    glEnd();
- 
-    // Render the back quad
-    glBindTexture(GL_TEXTURE_2D, skybox[2]);
-    glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex3f( -10.5, -10.5,  10.5 );
-        glTexCoord2f(1, 0); glVertex3f(  10.5, -10.5,  10.5 );
-        glTexCoord2f(1, 1); glVertex3f(  10.5,  10.5,  10.5 );
-        glTexCoord2f(0, 1); glVertex3f( -10.5,  10.5,  10.5 );
- 
-    glEnd();
- 
-    // Render the right quad
-    glBindTexture(GL_TEXTURE_2D, skybox[3]);
-    glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex3f( -10.5, -10.5, -10.5 );
-        glTexCoord2f(1, 0); glVertex3f( -10.5, -10.5,  10.5 );
-        glTexCoord2f(1, 1); glVertex3f( -10.5,  10.5,  10.5 );
-        glTexCoord2f(0, 1); glVertex3f( -10.5,  10.5, -10.5 );
-    glEnd();
- 
-    // Render the top quad
-    glBindTexture(GL_TEXTURE_2D, skybox[4]);
-    glBegin(GL_QUADS);
-        glTexCoord2f(0, 1); glVertex3f( -10.5,  10.5, -10.5 );
-        glTexCoord2f(0, 0); glVertex3f( -10.5,  10.5,  10.5 );
-        glTexCoord2f(1, 0); glVertex3f(  10.5,  10.5,  10.5 );
-        glTexCoord2f(1, 1); glVertex3f(  10.5,  10.5, -10.5 );
-    glEnd();
- 
-    // Render the bottom quad
-    glBindTexture(GL_TEXTURE_2D, skybox[5]);
-    glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex3f( -10.5, -10.5, -10.5 );
-        glTexCoord2f(0, 1); glVertex3f( -10.5, -10.5,  10.5 );
-        glTexCoord2f(1, 1); glVertex3f(  10.5, -10.5,  10.5 );
-        glTexCoord2f(1, 0); glVertex3f(  10.5, -10.5, -10.5 );
-    glEnd();
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	modelMatrix = modelMatrixStack.top();
-	modelMatrixStack.pop();
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
-	glUniform1i(readFromTextureLocation,0);
-	glActiveTexture(GL_TEXTURE7);
-
-}
 
 void drawCar(void)
 {
@@ -275,10 +191,6 @@ void drawCar(void)
 	car->display();
 	endTransformation();
 
-	//startTranslate(-360,-96,-100); 
-	//glutSolidCube(8);
-	//endTransformation();
-	//glColor4f(0.3f,0.3f,0.8f,1);
 	glBegin(GL_QUADS);
 	glVertex3f(-375,-100,-265);
 	glVertex3f(-375,-100, 15);
@@ -298,6 +210,7 @@ void renderScene(void)
 
 
 	if(whether_update) update();
+  if(move_camera) moveCamera();
 
 	glActiveTexture(GL_TEXTURE7);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,fboId);
@@ -328,36 +241,6 @@ void renderScene(void)
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); 
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
-
-	//bindCubeTextures();
-	//glEnable(GL_TEXTURE_CUBE_MAP);
-	//startTranslate(0, 6,-16);
-	//EnableReflectionMap();
-	//glutSolidCube(4);
-	//endTransformation();
-	//DisableReflectionMap();
-	//glDisable(GL_TEXTURE_CUBE_MAP);
-
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
-	//gluPerspective(45.0, RENDER_WIDTH/RENDER_HEIGHT, 1.0, 1000.0);
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
-	//gluLookAt(0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0);
-	//glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, skybox[0]);
-	//glBegin(GL_QUADS);
-	//glTexCoord2f(0.0, 0.0);
-	//glVertex3f(10.0, 0.0, -56.0);
-	//glTexCoord2f(1.0, 0.0);
-	//glVertex3f(20.0, 0.0, -56.0);
-	//glTexCoord2f(1.0, 1.0);
-	//glVertex3f(20.0, 5.0, -56.0);
-	//glTexCoord2f(0.0, 1.0);
-	//glVertex3f(10.0, 5.0, -56.0);
-	//glEnd();
-
 
 	glUseProgramObjectARB(shadowShaderId);
 
@@ -366,8 +249,6 @@ void renderScene(void)
 
 
 
-	//glActiveTexture(GL_TEXTURE1);
-	//glBindTexture(GL_TEXTURE_2D,textureId);
 	glUniform1i(firstFrameBoolLoc, first_frame);
 	glUniform1i(textureId, 1);
 	glUniform1i(renderWidthLocation, RENDER_WIDTH);
@@ -379,15 +260,15 @@ void renderScene(void)
 	glUniform1fARB(shadowMapStepXUniform,1.0/ (RENDER_WIDTH * SHADOW_MAP_RATIO));
 	glUniform1fARB(shadowMapStepYUniform,1.0/ (RENDER_HEIGHT * SHADOW_MAP_RATIO));
 
-	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]); // Send our projection matrix to the shader
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
 	glActiveTexture(GL_TEXTURE2);
 	glUniform1i(cubeMapLocation, 2);
 
-	glUniformMatrix4fv(previousProjectionMatrixLocation, 1, GL_FALSE, &previousProjectionMatrix[0][0]); // Send our projection matrix to the shader
-	glUniformMatrix4fv(previousViewMatrixLocation, 1, GL_FALSE, &previousViewMatrix[0][0]); // Send our view matrix to the shader
+	glUniformMatrix4fv(previousProjectionMatrixLocation, 1, GL_FALSE, &previousProjectionMatrix[0][0]);
+	glUniformMatrix4fv(previousViewMatrixLocation, 1, GL_FALSE, &previousViewMatrix[0][0]);
 	
 	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D,depthTextureId);
@@ -396,37 +277,12 @@ void renderScene(void)
 
 	glCullFace(GL_BACK);
 
-	//drawSkyBox();
 	setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 	drawObjects();
 	//drawCar();
 
-	// DEBUG only. this piece of code draw the depth buffer onscreen
-
-	//glUseProgramObjectARB(0);
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
-	//glOrtho(-RENDER_WIDTH/2,RENDER_WIDTH/2,-RENDER_HEIGHT/2,RENDER_HEIGHT/2,1,20);
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
-	//glColor4f(1,1,1,1);
-	//glActiveTextureARB(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D,depthTextureId);
-	//glEnable(GL_TEXTURE_2D);
-	//glTranslated(0,0,-1);
-	//glBegin(GL_QUADS);
-	//glTexCoord2d(0,0);glVertex3f(0,0,0);
-	//glTexCoord2d(1,0);glVertex3f(RENDER_WIDTH/2,0,0);
-	//glTexCoord2d(1,1);glVertex3f(RENDER_WIDTH/2,RENDER_HEIGHT/2,0);
-	//glTexCoord2d(0,1);glVertex3f(0,RENDER_HEIGHT/2,0);
-	//
-	//
-	//glEnd();
-	//glDisable(GL_TEXTURE_2D);
-	//
-	//copyFrameBufferToTexture();
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
 	executeBlurPass();
@@ -521,6 +377,14 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	case 'H':
 		showShadows = 1-showShadows;
 		break;
+  case 'c':
+  case 'C':
+    move_camera = !move_camera;
+    break;
+  case 'r':
+  case 'R':
+    show_reflection = !show_reflection;
+    break;
 	}
 }
 
@@ -551,12 +415,12 @@ void executeBlurPass()
 
 
 
-	glUniformMatrix4fv(blurProjectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]); // Send our projection matrix to the shader
-	glUniformMatrix4fv(blurViewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
-	glUniformMatrix4fv(blurModelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+	glUniformMatrix4fv(blurProjectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+	glUniformMatrix4fv(blurViewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	glUniformMatrix4fv(blurModelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
-	glUniformMatrix4fv(previousProjectionMatrixLocation, 1, GL_FALSE, &previousProjectionMatrix[0][0]); // Send our projection matrix to the shader
-	glUniformMatrix4fv(previousViewMatrixLocation, 1, GL_FALSE, &previousViewMatrix[0][0]); // Send our view matrix to the shader
+	glUniformMatrix4fv(previousProjectionMatrixLocation, 1, GL_FALSE, &previousProjectionMatrix[0][0]);
+	glUniformMatrix4fv(previousViewMatrixLocation, 1, GL_FALSE, &previousViewMatrix[0][0]);
 
 
 	setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
@@ -596,7 +460,6 @@ int main(int argc, char** argv)
 	glLightfv(GL_LIGHT0, GL_POSITION, p_light);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 
-	//motionBlurInit();
 
 	glutTimerFunc(30, displayCaller, 0);
 	glutDisplayFunc(renderScene);

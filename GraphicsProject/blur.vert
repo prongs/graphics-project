@@ -1,4 +1,4 @@
-// Used for shadow lookup
+// Vertex shader for the blur shader program
 
 
 uniform mat4 projectionMatrix;

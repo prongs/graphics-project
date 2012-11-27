@@ -1,3 +1,5 @@
+// Fragment shader for motion blur shader
+
 uniform mat4 previousProjectionMatrix;
 uniform mat4 previousViewMatrix;
 uniform int RENDER_WIDTH;
