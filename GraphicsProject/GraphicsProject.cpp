@@ -66,17 +66,17 @@ void loadSkybox()
 	//if (ImageLoad("skybox_1.bmp", skybox_images[5]) != 1)
 	//	exit(0);
 
-	if (ImageLoad("skybox_4_r.bmp", skybox_images[0]) != 1)
+	if (ImageLoad("s_right.bmp", skybox_images[0]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_5_r.bmp", skybox_images[1]) != 1)
+	if (ImageLoad("s_left.bmp", skybox_images[1]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_2.bmp", skybox_images[2]) != 1)
+	if (ImageLoad("s_bottom.bmp", skybox_images[2]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_3.bmp", skybox_images[3]) != 1)
+	if (ImageLoad("s_top.bmp", skybox_images[3]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_0_r.bmp", skybox_images[4]) != 1)
+	if (ImageLoad("s_front.bmp", skybox_images[4]) != 1)
 		exit(0);
-	if (ImageLoad("skybox_1_r.bmp", skybox_images[5]) != 1)
+	if (ImageLoad("s_back.bmp", skybox_images[5]) != 1)
 		exit(0);
 	glGenTextures(6, &skybox[0]);
 
@@ -162,7 +162,6 @@ void drawObjects(void)
 	glMaterialf(GL_FRONT, GL_SHININESS, 4.0);
 	glColor4f(0.9f,0.9f,0.9f,1);
 
-	glMaterialf(GL_FRONT, GL_SHININESS, 30);
 	startTranslate(0,6,-16);
 	glutSolidCube(4);
 	endTransformation();
