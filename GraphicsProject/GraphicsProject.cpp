@@ -67,7 +67,6 @@ void loadSkybox()
 		exit(0);
 
 	glGenTextures(6, &skybox[0]);
-	glBindTexture(GL_TEXTURE_2D, skybox[0]);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, skybox[0]);
 	glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, skybox[1]);
@@ -159,6 +158,7 @@ void drawObjects(void)
 	glutSolidSphere(2, 128, 128);
 	endTransformation();
 
+	glMaterialf(GL_FRONT, GL_SHININESS, 30);
 
 	glColor4f(0.3f,0.3f,0.3f,1);
 	glBegin(GL_QUADS);
