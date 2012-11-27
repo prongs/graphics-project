@@ -21,6 +21,9 @@ using namespace std;
 
 //Light mouvement circle radius
 float light_mvnt = 30.0f;
+float accel_0 = 0, accel_2 = 0, vel_0 = 0, vel_2 = 0;
+float accel_clamp = 0.01, vel_clamp = 1.0;
+
 
 GLuint skybox[6];
 Image* skybox_images[6];
@@ -42,6 +45,7 @@ void loadModels()
 
 void loadSkybox()
 {
+	glActiveTexture(GL_TEXTURE2);
 	skybox_images[0] = (Image*)malloc(sizeof(Image));
 	skybox_images[1] = (Image*)malloc(sizeof(Image));
 	skybox_images[2] = (Image*)malloc(sizeof(Image));
@@ -49,42 +53,46 @@ void loadSkybox()
 	skybox_images[4] = (Image*)malloc(sizeof(Image));
 	skybox_images[5] = (Image*)malloc(sizeof(Image));
 
-	if (ImageLoad("checkered_back.bmp", skybox_images[0]) != 1)
+	if (ImageLoad("skybox_0.bmp", skybox_images[0]) != 1)
 		exit(0);
-	if (ImageLoad("checkered_back.bmp", skybox_images[1]) != 1)
+	if (ImageLoad("skybox_1.bmp", skybox_images[1]) != 1)
 		exit(0);
-	if (ImageLoad("checkered_back.bmp", skybox_images[2]) != 1)
+	if (ImageLoad("skybox_2.bmp", skybox_images[2]) != 1)
 		exit(0);
-	if (ImageLoad("checkered_back.bmp", skybox_images[3]) != 1)
+	if (ImageLoad("skybox_3.bmp", skybox_images[3]) != 1)
 		exit(0);
-	if (ImageLoad("checkered_back.bmp", skybox_images[4]) != 1)
+	if (ImageLoad("skybox_4.bmp", skybox_images[4]) != 1)
 		exit(0);
-	if (ImageLoad("checkered_back.bmp", skybox_images[5]) != 1)
+	if (ImageLoad("skybox_5.bmp", skybox_images[5]) != 1)
 		exit(0);
 
 	glGenTextures(6, &skybox[0]);
 	glBindTexture(GL_TEXTURE_2D, skybox[0]);
 
-	//glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, skybox[0]);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, skybox[1]);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, skybox[2]);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, skybox[3]);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, skybox[4]);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, skybox[5]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X, skybox[0]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, skybox[1]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, skybox[2]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, skybox[3]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, skybox[4]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, skybox[5]);
 
-	//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, 3, skybox_images[0]->sizeX, skybox_images[0]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[0]->data);
-	//glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, 3, skybox_images[1]->sizeX, skybox_images[1]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[1]->data);
-	//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, 3, skybox_images[2]->sizeX, skybox_images[2]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[2]->data);
-	//glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, 3, skybox_images[3]->sizeX, skybox_images[3]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[3]->data);
-	//glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, 3, skybox_images[4]->sizeX, skybox_images[4]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[4]->data);
-	//glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, 3, skybox_images[5]->sizeX, skybox_images[5]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[5]->data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, 3, skybox_images[0]->sizeX, skybox_images[0]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[0]->data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, 3, skybox_images[1]->sizeX, skybox_images[1]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[1]->data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, 3, skybox_images[2]->sizeX, skybox_images[2]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[2]->data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, 3, skybox_images[3]->sizeX, skybox_images[3]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[3]->data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, 3, skybox_images[4]->sizeX, skybox_images[4]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[4]->data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, 3, skybox_images[5]->sizeX, skybox_images[5]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[5]->data);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, skybox_images[5]->sizeX, skybox_images[5]->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, skybox_images[5]->data);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	//glEnable(GL_TEXTURE_CUBE_MAP);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glEnable(GL_TEXTURE_CUBE_MAP);
 }
 
 void bindCubeTextures()
@@ -134,12 +142,6 @@ void update(void)
 void drawObjects(void)
 {
 
-	glColor4f(0.9f,0.9f,0.9f,1);
-
-	startTranslate(0,6,-16);
-	glutSolidCube(4);
-	endTransformation();
-	(modelMatrix, viewMatrix, projectionMatrix);
 	float a[]={0.2, 0.2, 0.2, 1.0};
 	float d[]={0.8, 0.1, 0.8, 1.0};
 	float s[]={0.5, 0.5, 0.5, 1.0};
@@ -147,9 +149,16 @@ void drawObjects(void)
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, d);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, s);
 	glMaterialf(GL_FRONT, GL_SHININESS, 4.0);
+	glColor4f(0.9f,0.9f,0.9f,1);
+
+	startTranslate(0,6,-16);
+	glutSolidCube(4);
+	endTransformation();
+	(modelMatrix, viewMatrix, projectionMatrix);
 	startTranslate(10,4,-5);
 	glutSolidSphere(2, 128, 128);
 	endTransformation();
+
 
 	glColor4f(0.3f,0.3f,0.3f,1);
 	glBegin(GL_QUADS);
@@ -159,6 +168,10 @@ void drawObjects(void)
 	glVertex3f( 15,2,-35);
 	glEnd();
 
+	glMaterialf(GL_FRONT, GL_SHININESS, 30);
+	startTranslate(20,14,-5);
+	glutSolidSphere(2, 128, 128);
+	endTransformation();
 }
 
 void drawCar(void)
@@ -274,6 +287,9 @@ void renderScene(void)
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
 	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
 
+	glActiveTexture(GL_TEXTURE2);
+	glUniform1i(cubeMapLocation, 2);
+
 	glUniformMatrix4fv(previousProjectionMatrixLocation, 1, GL_FALSE, &previousProjectionMatrix[0][0]); // Send our projection matrix to the shader
 	glUniformMatrix4fv(previousViewMatrixLocation, 1, GL_FALSE, &previousViewMatrix[0][0]); // Send our view matrix to the shader
 
@@ -336,17 +352,59 @@ void processNormalKeys(unsigned char key, int x, int y) {
 		whether_update=!whether_update;
 		break;
 	case 'w':
-		p_camera[0]-=1.0;
+		accel_0 -=0.01;
+		if(accel_0<-accel_clamp)
+			accel_0 = -accel_clamp;
+		if(accel_0>accel_clamp)
+			accel_0 = accel_clamp;
+		vel_0 +=accel_0;
+		if(vel_0<-vel_clamp)
+			vel_0 = -vel_clamp;
+		if(vel_0>vel_clamp)
+			vel_0 = vel_clamp;
+		p_camera[0]+=vel_0;
 		break;
 	case 's':
-		p_camera[0]+=1.0;
+		accel_0 +=0.01;
+		if(accel_0<-accel_clamp)
+			accel_0 = -accel_clamp;
+		if(accel_0>accel_clamp)
+			accel_0 = accel_clamp;
+		vel_0 +=accel_0;
+		if(vel_0<-vel_clamp)
+			vel_0 = -vel_clamp;
+		if(vel_0>vel_clamp)
+			vel_0 = vel_clamp;
+		p_camera[0]+=vel_0;
 		break;
 	case 'a':
-		p_camera[2]-=1.0;
+		accel_2 -=0.01;
+		if(accel_2<-accel_clamp)
+			accel_2 = -accel_clamp;
+		if(accel_2>accel_clamp)
+			accel_2 = accel_clamp;
+		vel_2 +=accel_2;
+		if(vel_2<-vel_clamp)
+			vel_2 = -vel_clamp;
+		if(vel_2>vel_clamp)
+			vel_2 = vel_clamp;
+		p_camera[2]+=vel_2;
 		break;
 	case 'd':
-		p_camera[2]+=1.0;
+		accel_2 +=0.01;
+		if(accel_2<-accel_clamp)
+			accel_2 = -accel_clamp;
+		if(accel_2>accel_clamp)
+			accel_2 = accel_clamp;
+		vel_2 +=accel_2;
+		if(vel_2<-vel_clamp)
+			vel_2 = -vel_clamp;
+		if(vel_2>vel_clamp)
+			vel_2 = vel_clamp;
+		p_camera[2]+=vel_2;
 		break;
+	case ' ':
+		accel_0 = accel_2 = vel_0 = vel_2 = 0;
 	}
 }
 
@@ -429,7 +487,7 @@ int main(int argc, char** argv)
 
 	glutKeyboardFunc(processNormalKeys);
 	loadModels();
-	//loadSkybox();
+	loadSkybox();
 	draw_time = omp_get_wtime();
 	glutMainLoop();
 }

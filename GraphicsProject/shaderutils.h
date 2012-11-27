@@ -38,6 +38,8 @@ int blurModelMatrixLocation;
 int previousProjectionMatrixLocation;
 int previousViewMatrixLocation;
 
+int cubeMapLocation;
+
 
 
 int firstFrameBoolLoc;
@@ -285,6 +287,8 @@ void loadAllShaders()
   projectionMatrixLocation = glGetUniformLocation(shadowShaderId, "projectionMatrix"); 
   viewMatrixLocation = glGetUniformLocation(shadowShaderId, "viewMatrix"); 
   modelMatrixLocation = glGetUniformLocation(shadowShaderId, "modelMatrix");
+
+  cubeMapLocation = glGetUniformLocation(shadowShaderId, "cubeMap");
 
   blurProjectionMatrixLocation = glGetUniformLocation(blurShaderId, "projectionMatrix"); 
   blurViewMatrixLocation = glGetUniformLocation(blurShaderId, "viewMatrix"); 

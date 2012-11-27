@@ -113,6 +113,8 @@
   <ItemGroup>
     <None Include="blur.frag" />
     <None Include="blur.vert" />
+    <None Include="cubeMap.frag" />
+    <None Include="cubeMap.vert" />
     <None Include="shadow.frag" />
     <None Include="shadow.vert" />
   </ItemGroup>

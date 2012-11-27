@@ -7,7 +7,7 @@ uniform sampler2D frameBuf;
 varying vec4 pos;
 void main()
 {
-    int numSamples = 20;
+    int numSamples = 10;
     vec4 prevPos = previousProjectionMatrix * previousViewMatrix * pos;
     if(prevPos.s<0&&prevPos.t<0)
 	{
