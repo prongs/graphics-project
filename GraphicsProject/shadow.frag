@@ -1,5 +1,9 @@
 uniform sampler2DShadow ShadowMap;
 uniform samplerCube cubeMap;
+uniform sampler2D tex;
+uniform bool readFromTexture;
+
+uniform bool showShadows;
 varying vec4 ShadowCoord;
 varying vec3 normal;
 varying vec3 vert_to_light;
@@ -40,7 +44,7 @@ void main()
     vec4 diffuse_col = vec4(gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse);
     vec4 specular_col = vec4(gl_LightSource[0].specular * gl_FrontMaterial.specular);
     vec4 col =	 (ambient_col + diffuse_col*diffuse_term + specular_col*pow(specular_term, gl_FrontMaterial.shininess) * shadow);
-    vec4 color =  vec4(vec3(col)*(shadow + 0.2),1.0);
+    vec4 color = showShadows?  vec4(vec3(col)*(shadow + 0.2),1.0): vec4(vec3(col), 1.0);
     gl_FragColor =	color;
     if(gl_FrontMaterial.shininess>=20)
 	{
@@ -48,11 +52,10 @@ void main()
         //or -E?
     reflectedDirection.y = -reflectedDirection.y;
         vec4 cubeColor = textureCube(cubeMap, reflectedDirection);
-        vec4 c = color+cubeColor;
+		vec4 c =	col+cubeColor;
         c.w = 1;
         gl_FragColor = c;
     }
-
 
 }
 

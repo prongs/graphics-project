@@ -4,15 +4,12 @@ uniform int RENDER_WIDTH;
 uniform int RENDER_HEIGHT;
 uniform bool first_frame;
 uniform sampler2D frameBuf;
+uniform int num_samples;
 varying vec4 pos;
 void main()
 {
-    int numSamples = 20;
+    int numSamples = num_samples;
     vec4 prevPos = previousProjectionMatrix * previousViewMatrix * pos;
-    if(prevPos.s<0&&prevPos.t<0)
-	{
-        gl_FragColor = vec4(1,1,0,1);
-    }
 
 	prevPos = prevPos/prevPos.w;
     float prevPos_x = ((prevPos.s+1.0)/2.0);
@@ -27,11 +24,6 @@ void main()
         blurColor+= texture2D(frameBuf, samplePos);
     }
 
-	if(blurColor.x==0)
-	{
-        gl_FragColor = vec4(1,0,0,1);
-        //return;
-	}
 	blurColor/=numSamples;
     blurColor.w = 1;
     gl_FragColor = blurColor;

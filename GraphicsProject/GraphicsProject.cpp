@@ -16,6 +16,8 @@ using namespace std;
 
 #include <stdio.h>
 
+int numSamples = 1;
+bool showShadows  = 0;
 
 // Expressed as float so gluPerspective division returns a float and not 0 (640/480 != 640.0/480.0).
 
@@ -152,7 +154,6 @@ void update(void)
 
 void drawObjects(void)
 {
-
 	float a[]={0.2, 0.2, 0.2, 1.0};
 	float d[]={0.8, 0.1, 0.8, 1.0};
 	float s[]={0.5, 0.5, 0.5, 1.0};
@@ -187,6 +188,87 @@ void drawObjects(void)
 	endTransformation();
 }
 
+void drawSkyBox()
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glPushAttrib(GL_ENABLE_BIT);
+    glEnable(GL_TEXTURE_2D);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_BLEND);
+	modelMatrixStack.push(modelMatrix);
+	modelMatrix = glm::mat4(1.0);
+	viewMatrix = glm::mat4(1.0);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+	//glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our model matrix to the shader
+	glUniform1i(textureLocation, 4);
+	glUniform1i(readFromTextureLocation,1);
+
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, skybox[0]);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex3f(  10.5, -10.5, -10.5 );
+        glTexCoord2f(1, 0); glVertex3f( -10.5, -10.5, -10.5 );
+        glTexCoord2f(1, 1); glVertex3f( -10.5,  10.5, -10.5 );
+        glTexCoord2f(0, 1); glVertex3f(  10.5,  10.5, -10.5 );
+    glEnd();
+	    // Render the left quad
+    glBindTexture(GL_TEXTURE_2D, skybox[1]);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex3f(  10.5, -10.5,  10.5 );
+        glTexCoord2f(1, 0); glVertex3f(  10.5, -10.5, -10.5 );
+        glTexCoord2f(1, 1); glVertex3f(  10.5,  10.5, -10.5 );
+        glTexCoord2f(0, 1); glVertex3f(  10.5,  10.5,  10.5 );
+    glEnd();
+ 
+    // Render the back quad
+    glBindTexture(GL_TEXTURE_2D, skybox[2]);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex3f( -10.5, -10.5,  10.5 );
+        glTexCoord2f(1, 0); glVertex3f(  10.5, -10.5,  10.5 );
+        glTexCoord2f(1, 1); glVertex3f(  10.5,  10.5,  10.5 );
+        glTexCoord2f(0, 1); glVertex3f( -10.5,  10.5,  10.5 );
+ 
+    glEnd();
+ 
+    // Render the right quad
+    glBindTexture(GL_TEXTURE_2D, skybox[3]);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex3f( -10.5, -10.5, -10.5 );
+        glTexCoord2f(1, 0); glVertex3f( -10.5, -10.5,  10.5 );
+        glTexCoord2f(1, 1); glVertex3f( -10.5,  10.5,  10.5 );
+        glTexCoord2f(0, 1); glVertex3f( -10.5,  10.5, -10.5 );
+    glEnd();
+ 
+    // Render the top quad
+    glBindTexture(GL_TEXTURE_2D, skybox[4]);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 1); glVertex3f( -10.5,  10.5, -10.5 );
+        glTexCoord2f(0, 0); glVertex3f( -10.5,  10.5,  10.5 );
+        glTexCoord2f(1, 0); glVertex3f(  10.5,  10.5,  10.5 );
+        glTexCoord2f(1, 1); glVertex3f(  10.5,  10.5, -10.5 );
+    glEnd();
+ 
+    // Render the bottom quad
+    glBindTexture(GL_TEXTURE_2D, skybox[5]);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex3f( -10.5, -10.5, -10.5 );
+        glTexCoord2f(0, 1); glVertex3f( -10.5, -10.5,  10.5 );
+        glTexCoord2f(1, 1); glVertex3f(  10.5, -10.5,  10.5 );
+        glTexCoord2f(1, 0); glVertex3f(  10.5, -10.5, -10.5 );
+    glEnd();
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	modelMatrix = modelMatrixStack.top();
+	modelMatrixStack.pop();
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
+	glUniform1i(readFromTextureLocation,0);
+	glActiveTexture(GL_TEXTURE7);
+
+}
+
 void drawCar(void)
 {
 	startTranslate(-330,-100,-100); 
@@ -207,8 +289,8 @@ void drawCar(void)
 
 void displayCaller(int a)
 {
-  glutPostRedisplay();
-  glutTimerFunc(30, displayCaller, 0);
+	glutPostRedisplay();
+	glutTimerFunc(30, displayCaller, 0);
 }
 
 void renderScene(void) 
@@ -292,6 +374,7 @@ void renderScene(void)
 	glUniform1i(renderHeightLocation, RENDER_HEIGHT);
 
 
+	glUniform1i(showShadowsLocation, showShadows);
 	glUniform1iARB(shadowMapUniform,7);
 	glUniform1fARB(shadowMapStepXUniform,1.0/ (RENDER_WIDTH * SHADOW_MAP_RATIO));
 	glUniform1fARB(shadowMapStepYUniform,1.0/ (RENDER_HEIGHT * SHADOW_MAP_RATIO));
@@ -305,13 +388,18 @@ void renderScene(void)
 
 	glUniformMatrix4fv(previousProjectionMatrixLocation, 1, GL_FALSE, &previousProjectionMatrix[0][0]); // Send our projection matrix to the shader
 	glUniformMatrix4fv(previousViewMatrixLocation, 1, GL_FALSE, &previousViewMatrix[0][0]); // Send our view matrix to the shader
-
+	
 	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D,depthTextureId);
 
 	setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
 
 	glCullFace(GL_BACK);
+
+	//drawSkyBox();
+	setupMatrices(p_camera[0],p_camera[1],p_camera[2],l_camera[0],l_camera[1],l_camera[2], false);
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]); // Send our view matrix to the shader
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]); // Send our model matrix to the shader
 	drawObjects();
 	//drawCar();
 
@@ -424,6 +512,15 @@ void processNormalKeys(unsigned char key, int x, int y) {
 		break;
 	case ' ':
 		accel_0 = accel_2 = vel_0 = vel_2 = 0;
+		break;
+	case 'b' :
+	case 'B' :
+		numSamples = 21-numSamples;
+		break;
+	case 'h':
+	case 'H':
+		showShadows = 1-showShadows;
+		break;
 	}
 }
 
@@ -446,6 +543,7 @@ void executeBlurPass()
 
 	glActiveTexture(GL_TEXTURE6);
 	glBindTexture(GL_TEXTURE_2D,blurTextureId);
+	glUniform1i(numSamplesLoc, numSamples);
 	glUniform1i(firstFrameBoolLoc, first_frame);
 	glUniform1i(frameBufferLoc, 6);
 	glUniform1i(renderWidthLocation, RENDER_WIDTH);
@@ -500,7 +598,7 @@ int main(int argc, char** argv)
 
 	//motionBlurInit();
 
-  glutTimerFunc(30, displayCaller, 0);
+	glutTimerFunc(30, displayCaller, 0);
 	glutDisplayFunc(renderScene);
 	//glutIdleFunc(renderScene);
 

@@ -39,6 +39,9 @@ int previousProjectionMatrixLocation;
 int previousViewMatrixLocation;
 
 int cubeMapLocation;
+int readFromTextureLocation;
+int textureLocation;
+int showShadowsLocation;
 
 
 
@@ -47,6 +50,7 @@ int frameBufferLoc;
 int prevFrameLocation;
 int renderWidthLocation;
 int renderHeightLocation;
+int numSamplesLoc;
 
 //Camera position
 float p_camera[3] = {32,20,0};
@@ -289,6 +293,9 @@ void loadAllShaders()
   modelMatrixLocation = glGetUniformLocation(shadowShaderId, "modelMatrix");
 
   cubeMapLocation = glGetUniformLocation(shadowShaderId, "cubeMap");
+  readFromTextureLocation = glGetUniformLocation(shadowShaderId, "readFromTexture");
+  textureLocation = glGetUniformLocation(shadowShaderId, "tex");
+  showShadowsLocation = glGetUniformLocation(shadowShaderId, "showShadows");
 
   blurProjectionMatrixLocation = glGetUniformLocation(blurShaderId, "projectionMatrix"); 
   blurViewMatrixLocation = glGetUniformLocation(blurShaderId, "viewMatrix"); 
@@ -300,6 +307,7 @@ void loadAllShaders()
   renderHeightLocation = glGetUniformLocation(blurShaderId, "RENDER_HEIGHT"); 
   firstFrameBoolLoc = glGetUniformLocation(blurShaderId, "first_frame"); 
   frameBufferLoc = glGetUniformLocation(blurShaderId, "frameBuf"); 
+  numSamplesLoc = glGetUniformLocation(blurShaderId, "num_samples");
 
 
 }
